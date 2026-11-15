@@ -1,0 +1,20 @@
+.env
+sessions/
+__pycache__/
+*.pyc
+venv/
+.venv/
+Perchance-API/
+*.log
+.DS_Store
+
+# generated / transient media (built fresh every run)
+assets/output/
+assets/tmp/
+assets/images/
+assets/overlay/
+
+# SQLite state IS committed (duplicate-post protection + rotation memory),
+# but the WAL sidecar files are transient.
+data/*.db-wal
+data/*.db-shm

@@ -1,0 +1,139 @@
+name: Scheduled reel post
+
+on:
+  schedule:
+    # 6 slots/day (every 4 hours) at :23 — GitHub cron is best-effort
+    # (expect 5-30 min drift); cadence guards make drift harmless.
+    - cron: "23 */4 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Render only, do not post"
+        type: boolean
+        default: false
+      theme:
+        description: "Force a content theme (empty = auto)"
+        type: string
+        default: ""
+      slot:
+        description: "Run label for the runs table"
+        type: string
+        default: "manual"
+
+permissions:
+  contents: write
+
+# Never cancel mid-publish: an interrupted upload is exactly how an
+# unreconciled post happens. Runs queue instead.
+concurrency:
+  group: insta-posting
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Verify ffmpeg has libass
+        run: |
+          ffmpeg -hide_banner -filters | grep -E ' ass | subtitles ' \
+            || { echo "::error::ffmpeg lacks libass (ass/subtitles filter)"; exit 1; }
+          ffprobe -version | head -n 1
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m pytest -q
+
+      # Session cookies are auth material: cached (7-day eviction bounds the
+      # number of entries) but NEVER committed to the repo.
+      - name: Restore Instagram sessions
+        uses: actions/cache@v4
+        with:
+          path: sessions
+          key: ig-sessions-v2-${{ github.run_id }}
+          restore-keys: ig-sessions-v2-
+
+      - name: Start Perchance image API
+        run: |
+          git clone --depth 1 https://github.com/afrozthalam/Perchance-API.git
+          pip install -q -r Perchance-API/requirements.txt
+          nohup python Perchance-API/app.py > perchance.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -sf http://127.0.0.1:8000/v1/health; then echo " healthy"; break; fi
+            sleep 2
+          done
+          if ! curl -sf http://127.0.0.1:8000/v1/health; then
+            echo "::error::Perchance API failed to start"
+            tail -n 80 perchance.log || true
+            exit 1
+          fi
+
+      - name: Generate, render, post
+        env:
+          IG_USERNAME_1: ${{ secrets.IG_USERNAME_1 }}
+          IG_PASSWORD_1: ${{ secrets.IG_PASSWORD_1 }}
+          IG_2FA_SECRET_1: ${{ secrets.IG_2FA_SECRET_1 }}
+          IG_USERNAME_2: ${{ secrets.IG_USERNAME_2 }}
+          IG_PASSWORD_2: ${{ secrets.IG_PASSWORD_2 }}
+          IG_2FA_SECRET_2: ${{ secrets.IG_2FA_SECRET_2 }}
+          IG_HANDLE_1: ${{ vars.IG_HANDLE_1 }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          NOTIFY_WEBHOOK_URL: ${{ secrets.NOTIFY_WEBHOOK_URL }}
+          DAILY_CAP_PER_ACCOUNT: ${{ vars.DAILY_CAP_PER_ACCOUNT || '6' }}
+          MIN_GAP_MINUTES: ${{ vars.MIN_GAP_MINUTES || '120' }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: |
+          THEME_ARG=""
+          if [ -n "${{ inputs.theme }}" ]; then THEME_ARG="--theme ${{ inputs.theme }}"; fi
+          python pipeline.py --strict --slot "${{ inputs.slot || 'cron' }}" $THEME_ARG
+
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-${{ github.run_id }}
+          path: |
+            assets/output/*.mp4
+            assets/images/*.jpg
+            perchance.log
+          retention-days: 3
+          if-no-files-found: ignore
+
+      # Persist engine state (posts/lines/usage) — this is the whole
+      # duplicate-post + rotation memory, and it keeps the repo active so
+      # GitHub does not disable the schedule after 60 idle days.
+      - name: Commit engine state
+        if: always()
+        run: |
+          git config user.name "insta-bot"
+          git config user.email "actions@users.noreply.github.com"
+          python -c "import db; db.checkpoint()"
+          for i in 1 2 3; do
+            git add -A data
+            if git diff --cached --quiet; then
+              echo "No state changes"
+              break
+            fi
+            git commit -m "state: run ${{ github.run_id }} [skip ci]" && \
+              git push && break || {
+              echo "push rejected, rebasing (attempt $i)"
+              git pull --rebase --autostash
+            }
+          done
+
+      - name: Dump Perchance log on failure
+        if: failure()
+        run: tail -n 80 perchance.log || true

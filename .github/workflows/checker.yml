@@ -1,0 +1,80 @@
+name: Reel checker
+
+# Hourly safety net: if the scheduled post workflow has not succeeded in the
+# last 2 hours, dispatch it again. The engine's own guards (daily cap, min
+# gap, caption dedupe, reconciliation) make a redundant dispatch harmless —
+# it can never double-post.
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch post workflow if stale
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          API="$GITHUB_API_URL/repos/$GITHUB_REPOSITORY"
+
+          python - <<'PY'
+          import json, os, time, calendar, urllib.request, urllib.error, sys
+
+          api = os.environ["GITHUB_API_URL"] + "/repos/" + os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+
+          def get(url):
+              req = urllib.request.Request(url, headers={
+                  "Authorization": f"Bearer {token}",
+                  "Accept": "application/vnd.github+json",
+              })
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.load(r)
+
+          def ts(iso):
+              # "2026-11-15T14:23:45.123Z" -> epoch (UTC)
+              return calendar.timegm(time.strptime(iso[:19], "%Y-%m-%dT%H:%M:%S"))
+
+          runs = get(f"{api}/actions/workflows/post.yml/runs?per_page=6")
+          items = runs.get("workflow_runs", [])
+          if not items:
+              print("no runs yet — leaving the schedule alone")
+              sys.exit(0)
+
+          for r in items:
+              if r["status"] in ("in_progress", "queued"):
+                  print(f"run {r['run_number']} is {r['status']} — nothing to do")
+                  sys.exit(0)
+
+          now = time.time()
+          for r in items:
+              if r["conclusion"] == "success":
+                  ended = r.get("updated_at") or r.get("created_at")
+                  if now - ts(ended) < 2 * 3600:
+                      print(f"success {int((now - ts(ended)) / 60)} min ago — fine")
+                      sys.exit(0)
+
+          print("no successful run in the last 2 hours — dispatching")
+          body = json.dumps({"ref": "main",
+                             "inputs": {"dry_run": "false",
+                                        "slot": "hourly-retry"}}).encode()
+          req = urllib.request.Request(
+              f"{api}/actions/workflows/post.yml/dispatches", data=body,
+              headers={"Authorization": f"Bearer {token}",
+                       "Content-Type": "application/json",
+                       "Accept": "application/vnd.github+json"})
+          try:
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  print(f"dispatched (HTTP {resp.status})")
+          except urllib.error.HTTPError as e:
+              # 409 = a dispatch is already pending; harmless.
+              print(f"dispatch HTTP {e.code}: {e.read()[:200]!r}")
+          PY
