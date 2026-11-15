@@ -72,18 +72,32 @@ jobs:
           key: ig-sessions-v2-${{ github.run_id }}
           restore-keys: ig-sessions-v2-
 
-      - name: Start Perchance image API
+      - name: Start Perchance image API (xvfb — it launches headful Chrome)
         run: |
+          sudo apt-get install -y -qq xvfb
+          # DrissionPage needs a real Chrome/Chromium binary
+          if ! command -v google-chrome >/dev/null 2>&1 && \
+             ! command -v chromium-browser >/dev/null 2>&1 && \
+             ! command -v chromium >/dev/null 2>&1; then
+            wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            sudo apt-get install -y -qq ./google-chrome-stable_current_amd64.deb
+          fi
+          command -v google-chrome || command -v chromium || true
           git clone --depth 1 https://github.com/afrozthalam/Perchance-API.git
           pip install -q -r Perchance-API/requirements.txt
-          nohup python Perchance-API/app.py > perchance.log 2>&1 &
-          for i in $(seq 1 45); do
-            if curl -sf http://127.0.0.1:8000/v1/health; then echo " healthy"; break; fi
+          nohup xvfb-run -a -s "-screen 0 1280x1024x24" \
+            python Perchance-API/app.py > perchance.log 2>&1 &
+          # /v1/health answers 200 while the browser pool is still warming;
+          # wait for the pool to report ready (up to 150s).
+          for i in $(seq 1 75); do
+            if curl -sf http://127.0.0.1:8000/v1/health | grep -q '"ready": *true'; then
+              echo "Perchance ready after ~$((i*2))s"; break
+            fi
             sleep 2
           done
-          if ! curl -sf http://127.0.0.1:8000/v1/health; then
-            echo "::error::Perchance API failed to start"
-            tail -n 80 perchance.log || true
+          if ! curl -sf http://127.0.0.1:8000/v1/health | grep -q '"ready": *true'; then
+            echo "::error::Perchance browser pool never became ready"
+            tail -n 120 perchance.log || true
             exit 1
           fi
 
