@@ -59,7 +59,7 @@ def _try_perchance(prompt: str) -> Path | None:
         "aspect_ratio": PERCHANCE_ASPECT,
         "guidance_scale": PERCHANCE_GUIDANCE,
         "num_images": 1,
-        "seed": random.randint(0, 2**31 - 1),
+        "seed": str(random.randint(0, 2**31 - 1)),
     }
 
     print(f"    [*] Perchance: {prompt[:70]}...")
