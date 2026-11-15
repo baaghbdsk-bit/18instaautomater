@@ -292,7 +292,7 @@ def run(argv=None) -> int:
 
         # 2. auth preflight
         usable = [a for a in ACCOUNTS if a["username"] and a["password"]]
-        if not usable:
+        if not usable and not dry:
             raise RuntimeError("no accounts configured (set IG_USERNAME_1 etc.)")
         errors: list = []
         for acct in usable:
@@ -300,7 +300,7 @@ def run(argv=None) -> int:
                 clients[acct["name"]] = login_account(acct)
             except Exception as e:  # noqa: BLE001
                 errors.append(f"{acct['name']}: {e}")
-        if not clients:
+        if usable and not clients:
             raise RuntimeError("login failed for every account — " +
                                "; ".join(errors))
         if errors:
@@ -327,7 +327,9 @@ def run(argv=None) -> int:
             outcome["status"] = "skipped"
             finish("skipped", "daily-cap")
             return 0
-        account = account or usable[0]
+        account = account or (usable[0] if usable else
+                              {"name": "dry-run", "username": "(none)",
+                               "handle": "@xene.ai"})
         used_today = db.count_published_today(account["name"])
         print(f"[*] Account : {account['name']} ({account['username']})")
         print(f"[*] Today   : {used_today}/{DAILY_CAP_PER_ACCOUNT} published")
