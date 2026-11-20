@@ -110,11 +110,33 @@ def doctor() -> int:
     else:
         _bad("no IG accounts configured (IG_USERNAME_1/IG_PASSWORD_1)"); failures += 1
 
-    # LLM
+    # curated quote bank (quotes NEVER come from an LLM)
+    try:
+        import quote_bank
+        bank = quote_bank.load_bank()
+        if bank:
+            _ok(f"quote bank: {len(bank)} approved lines "
+                f"({quote_bank.bank_fingerprint(bank)[:12]}...)")
+        else:
+            _bad("quote bank empty — add approved lines to "
+                 "assets/quotes/approved.json"); failures += 1
+    except Exception as e:  # noqa: BLE001
+        _bad(f"quote bank: {e}"); failures += 1
+
+    # LLM (optional: caption hooks/hashtags only, never quote generation)
     if LLM_API_KEY:
         _ok(f"LLM configured: {LLM_BASE_URL} ({len(lines.LLM_MODELS)} models)")
     else:
-        _warn("LLM_API_KEY empty — seed-bank lines only (set it for variety)")
+        _warn("LLM_API_KEY empty — captions use fixed CTAs/hashtags; "
+              "quotes come from the approved bank")
+
+    # configured image provider
+    try:
+        from image_providers.registry import get_provider
+        provider = get_provider()
+        _ok(f"image provider: {provider.name}")
+    except Exception as e:  # noqa: BLE001
+        _bad(f"image provider: {e}"); failures += 1
 
     # Perchance
     try:
@@ -226,13 +248,97 @@ def cleanup() -> int:
     return 0
 
 
+def quotes() -> int:
+    """Inspect the curated quote bank and usage without touching the network."""
+    import quote_bank
+    bank = quote_bank.load_bank()
+    used = db.used_quote_ids()
+    print(quote_bank.format_bank_status(bank, used))
+    print(f"fingerprint: {quote_bank.bank_fingerprint(bank)}")
+    return 0
+
+
+def preview() -> int:
+    """Build a prompt + compose a sample image with a local photo. Never publishes."""
+    import random
+    import quote_bank
+    from character.profile import MASTER_PROFILE
+    from character.variations import select_variation, build_prompt
+    from compose_image import compose_quote_image
+    from validate import validate_final_image
+
+    bank = quote_bank.load_bank()
+    quote = quote_bank.select_unused(bank, db.used_quote_ids())
+    if quote is None:
+        print("[!] Quote bank exhausted — nothing to preview.")
+        return 1
+    images = sorted((BASE_DIR / "assets" / "images").glob("*.jpg"))
+    if not images:
+        print("[!] No source image in assets/images. Generate one first.")
+        return 1
+    variation = select_variation([], rng=random.Random(0))
+    prompt = build_prompt(MASTER_PROFILE, variation)
+    print("=== PROMPT ===")
+    print(prompt)
+    print("\n=== QUOTE ===")
+    print(quote.text)
+    result = compose_quote_image(images[-1], quote.text, variant="lower")
+    if not result.get("ok"):
+        print(f"[!] Composition failed: {result.get('error')}")
+        return 1
+    ok, reasons, info = validate_final_image(
+        result["path"], must_contain_quote=quote.text)
+    print(f"\n=== PREVIEW ===\n{result['path']}")
+    print(f"valid={ok} reasons={reasons} info={info}")
+    return 0 if ok else 1
+
+
+def generate() -> int:
+    """Generate one real image through the configured provider (no composing)."""
+    import quote_bank
+    from character.profile import MASTER_PROFILE
+    from character.variations import select_variation, build_prompt
+    from image_providers.base import ImageRequest
+    from image_providers.registry import get_provider
+    from pipeline import _character_seed
+
+    bank = quote_bank.load_bank()
+    quote = quote_bank.select_unused(bank, db.used_quote_ids())
+    variation = select_variation([])
+    provider = get_provider()
+    req = ImageRequest(
+        prompt=build_prompt(MASTER_PROFILE, variation),
+        negative_prompt=MASTER_PROFILE.negative_prompt_text(),
+        seed=str(_character_seed()), model=MASTER_PROFILE.style_preset,
+        metadata={"quote_id": quote.id, "variation": variation.key})
+    print(f"[*] provider={provider.name} variation={variation.key}")
+    result = provider.generate(req)
+    print(f"ok={result.ok} status={result.status} path={result.path} "
+          f"error={result.error}")
+    return 0 if result.ok else 1
+
+
+def session() -> int:
+    """Show cached-session metadata only (never session contents)."""
+    from post_instagram import session_status
+    for acc in ACCOUNTS:
+        if acc.get("username"):
+            info = session_status(acc)
+            print(f"{acc['name']}: cached={info['cached']} "
+                  f"size={info['size']} path={info['path']}")
+    return 0
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="reel-engine maintenance CLI")
+    parser = argparse.ArgumentParser(description="quote-engine maintenance CLI")
     parser.add_argument("command", choices=["doctor", "status", "library",
-                                            "insights", "cleanup"])
+                                            "insights", "cleanup",
+                                             "quotes", "preview", "generate",
+                                             "session"])
     args = parser.parse_args()
     return {"doctor": doctor, "status": status, "library": library,
-            "insights": insights, "cleanup": cleanup}[args.command]()
+            "insights": insights, "cleanup": cleanup, "quotes": quotes, "preview": preview,
+             "generate": generate, "session": session}[args.command]()
 
 
 if __name__ == "__main__":

@@ -96,6 +96,11 @@ def connect() -> sqlite3.Connection:
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA busy_timeout=15000")
     conn.executescript(SCHEMA)
+    # Additive vertical schema (static quote-image posts). Idempotent and
+    # lazy so importing db.py never pulls in the migration until a DB opens.
+    from migrations import migrate as _migrate
+    if _migrate(conn):
+        conn.commit()
     return conn
 
 
@@ -453,3 +458,76 @@ def import_legacy_history(path: Path) -> int:
         path.rename(path.with_suffix(".json.imported"))
         print(f"[db] imported {imported} legacy posts from {path.name}")
     return imported
+
+
+# ---------------------------------------------------------------------------
+# static quote-image vertical (migration 001)
+# ---------------------------------------------------------------------------
+# Lifecycle stages for the vertical. Kept separate from STATUSES above so the
+# legacy reel statuses/queries are untouched.
+STAGES = ("pending", "quote_selected", "image_generating", "image_downloaded",
+          "composition_complete", "ready_to_publish", "published", "failed",
+          "skipped", "dry_run")
+
+_STAGE_FIELDS = ("status", "generation_status", "composition_status")
+
+
+def claim_quote(quote_id: str, post_id: int) -> bool:
+    """Atomically reserve a quote. False means another run already claimed it."""
+    conn = connect()
+    cur = conn.execute(
+        "INSERT INTO quote_usage(quote_id, post_id, used_at) VALUES(?,?,?) "
+        "ON CONFLICT(quote_id) DO NOTHING",
+        (str(quote_id), post_id, _now()))
+    conn.commit()
+    ok = cur.rowcount > 0
+    conn.close()
+    return ok
+
+
+def quote_already_used(quote_id: str) -> bool:
+    conn = connect()
+    row = conn.execute(
+        "SELECT 1 FROM quote_usage WHERE quote_id=?", (str(quote_id),)).fetchone()
+    conn.close()
+    return row is not None
+
+
+def used_quote_ids() -> set:
+    conn = connect()
+    rows = conn.execute("SELECT quote_id FROM quote_usage").fetchall()
+    conn.close()
+    return {r["quote_id"] for r in rows}
+
+
+def update_post_stage(post_id: int, **fields) -> None:
+    """update_post, but stage-bearing fields must hold a valid STAGES value."""
+    for key in _STAGE_FIELDS:
+        value = fields.get(key)
+        if value is not None and value not in STAGES:
+            raise ValueError(
+                f"invalid {key}: {value!r} (expected one of {STAGES})")
+    update_post(post_id, **fields)
+
+
+def posts_by_stage(stage: str, limit: int = 20) -> List[dict]:
+    """Posts currently sitting in a given vertical stage (any stage column)."""
+    conn = connect()
+    rows = conn.execute(
+        "SELECT * FROM posts WHERE status=? OR generation_status=? "
+        "OR composition_status=? ORDER BY id DESC LIMIT ?",
+        (stage, stage, stage, limit)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def recent_posts_need_recovery() -> List[dict]:
+    """In-flight posts older than five minutes — crash recovery candidates."""
+    cutoff = (datetime.now() - timedelta(minutes=5)).isoformat(timespec="seconds")
+    conn = connect()
+    rows = conn.execute(
+        "SELECT * FROM posts WHERE status IN ('building','built','publishing',"
+        "'image_generating','ready_to_publish') "
+        "AND created_at <= ? ORDER BY id", (cutoff,)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]

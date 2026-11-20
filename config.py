@@ -61,7 +61,7 @@ CHANNEL_HANDLE = os.getenv("IG_HANDLE_1") or "@xene.ai"
 # Schedule / cadence guards
 # ---------------------------------------------------------------------------
 # Minimum minutes between two publishes (any account).
-MIN_GAP_MINUTES = int(os.getenv("MIN_GAP_MINUTES", "120"))
+MIN_GAP_MINUTES = int(os.getenv("MIN_GAP_MINUTES", "0"))
 # Per-UTC-day publish cap per account.
 DAILY_CAP_PER_ACCOUNT = int(os.getenv("DAILY_CAP_PER_ACCOUNT", "6"))
 # Local multi-post mode (main.py) pacing.
@@ -140,6 +140,57 @@ PERCHANCE_NEGATIVE = os.getenv(
     "nude, naked, explicit, porn, sexual, NSFW, underwear, lingerie, "
     "see-through, topless, cleavage",
 )
+
+# ---------------------------------------------------------------------------
+# Quote bank (curated, approved lines — LLM generation is NOT used to fill it)
+# ---------------------------------------------------------------------------
+QUOTES_DIR = ASSETS_DIR / "quotes"
+FINAL_IMAGES_DIR = ASSETS_DIR / "final"
+FAILED_IMAGES_DIR = ASSETS_DIR / "failed"
+for _d in (QUOTES_DIR, FINAL_IMAGES_DIR, FAILED_IMAGES_DIR):
+    _d.mkdir(parents=True, exist_ok=True)
+
+QUOTE_BANK_PATH = Path(os.getenv("QUOTE_BANK_PATH") or
+                       (QUOTES_DIR / "approved.json"))
+QUOTE_LOW_WATERMARK = int(os.getenv("QUOTE_LOW_WATERMARK", "20"))
+
+# ---------------------------------------------------------------------------
+# Character identity + image provider (swappable, no hardcoded credentials)
+# ---------------------------------------------------------------------------
+CHARACTER_ID = os.getenv("CHARACTER_ID", "meera-v1")
+IMAGE_PROVIDER = os.getenv("IMAGE_PROVIDER", "perchance")
+PERCHANCE_TIMEOUT = int(os.getenv("PERCHANCE_TIMEOUT", "240"))
+PERCHANCE_RETRIES = int(os.getenv("PERCHANCE_RETRIES", "2"))
+# Placeholder is for local development/tests ONLY. Production refuses it.
+ALLOW_PLACEHOLDER = os.getenv("ALLOW_PLACEHOLDER", "0") == "1"
+
+# Optional alternative provider — NVIDIA NIM (Flux.1-schnell), verified endpoint.
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "")
+NVIDIA_FLUX_URL = os.getenv(
+    "NVIDIA_FLUX_URL",
+    "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell",
+)
+NVIDIA_TIMEOUT = int(os.getenv("NVIDIA_TIMEOUT", "300"))
+
+# ---------------------------------------------------------------------------
+# Final quote-image composition (static image posts)
+# ---------------------------------------------------------------------------
+COMPOSE_VARIANTS = ["upper", "center", "lower"]
+COMPOSE_MIN_BYTES = int(os.getenv("COMPOSE_MIN_BYTES", "20000"))
+
+# Reel made from the composed quote image (visual stays identical to photo mode)
+REEL_DURATION = float(os.getenv("REEL_DURATION", "12"))
+REEL_MOTION = os.getenv("REEL_MOTION", "push_center")
+
+# ---------------------------------------------------------------------------
+# Instagram catalog music on static photo posts (instagrapi >= 3.2)
+# ---------------------------------------------------------------------------
+MUSIC_ENABLED = os.getenv("MUSIC_ENABLED", "1") == "1"
+# trending | search | off   (off disables even when MUSIC_ENABLED=1)
+MUSIC_SOURCE = os.getenv("MUSIC_SOURCE", "trending").lower()
+MUSIC_SEARCH_QUERY = os.getenv("MUSIC_SEARCH_QUERY", "trending")
+MUSIC_TRENDING_PRODUCT = os.getenv("MUSIC_TRENDING_PRODUCT", "music_in_feed")
+MUSIC_LIMIT = int(os.getenv("MUSIC_LIMIT", "10"))
 
 # Music licensing (CC BY 4.0 requires attribution in the caption).
 MUSIC_CREDIT_IN_CAPTION = os.getenv("MUSIC_CREDIT_IN_CAPTION", "1") == "1"

@@ -1,143 +1,183 @@
-# 18instaautomater
+# 18instaautomater — AI glamour quote posts
 
-Fully autonomous Instagram Reel engine for **@xene.ai**: picks a content
-theme weighted by past engagement, writes a fresh flirty line (Gemini, with
-a built-in seed bank fallback), generates an AI photo (Perchance), renders a
-1080×1920 Reel with FFmpeg (Anton typography, scrim, camera motion, licensed
-music), validates the MP4, publishes through instagrapi, and commits its
-state back to the repository.
-
-GitHub Actions wakes it 6 times a day; an hourly checker re-dispatches a
-missed slot. No laptop needed after setup.
+Automated **static Instagram quote images** built around one consistent
+fictional adult South Asian AI influencer. Each run claims one unused line from
+the curated quote bank, builds a prompt from a locked master character identity
+plus a curated visual variation, generates a real image through a swappable
+provider adapter, composes the quote onto the image, validates the result,
+records the full lifecycle in SQLite and publishes through a cached Instagram
+session.
 
 ```
-GitHub Actions (6 crons + hourly checker)
-   │
-   ├─ kill switch → auth → crash reconciliation → cap/gap guards
-   ├─ theme picked by measured engagement (likes+comments)
-   ├─ line written by Gemini (3-level dedupe) or seed bank
-   ├─ photo: Perchance theme prompts (prompt-level dedupe)
-   ├─ music: CC BY 4.0 pool, LRU picks, random offset per post
-   ├─ render 1080×1920, 9–15 s, ASS text, scrim, 5 camera moves
-   ├─ validate (codec/size/duration/faststart) — broken renders never post
-   ├─ duplicate-caption check vs last 12 posts → upload with safe retry
-   ├─ record in SQLite (committed back by CI)
-   └─ artifact + step summary + optional webhook
+quote bank (110 approved lines, no LLM filler)
+   → atomic claim (quote_usage table)
+   → master character prompt + curated variation (outfit/pose/expression/...)
+   → ImageProvider adapter (Perchance by default; NVIDIA optional)
+   → real image downloaded + verified (placeholders refused)
+   → Pillow quote composition (1080x1920, Anton typography, scrim)
+   → final image validation (size, open, sidecar, placeholder guard)
+   → session/cookie publish via instagrapi with duplicate protection
+   → SQLite lifecycle + run report + webhook
 ```
 
-## ⚠️ Warnings
-
-1. **Instagram automation violates Instagram's Terms of Service.** Accounts
-   can be blocked or disabled. Volume is deliberately capped (6/day, 120-min
-   gap) — raise it at your own risk. You accept this by running it.
-2. **Keep content suggestive, not explicit.** Nudity gets pages disabled
-   fast, which defeats the point of reviving them. The Perchance negative
-   prompt blocks explicit material on purpose; edit lines in `lines.py`
-   accordingly.
-3. **FFmpeg edits media, it doesn't create photos.** Images come from the
-   Perchance wrapper; captions/lines from `lines.py` (+ Gemini).
-
-## Architecture (vs the original script collection)
-
-| Concern | Where | Notes |
-|---|---|---|
-| State | `data/engine.db` (SQLite, committed) | posts, lines, asset usage, insights, runs |
-| Orchestration | `pipeline.py` | kill switch → auth → reconcile → guards → build → publish |
-| Content | `themes.py` + `lines.py` | 12 themes × 3 prompts, 90 seed lines, LLM + dedupe |
-| Rendering | `generate_video.py` | ASS/libass, layout auto-fit, scrim, motion, loudnorm |
-| Validation | `validate.py` | ffprobe + MP4 faststart atom walker |
-| Publishing | `post_instagram.py` | instagrapi, session cache, 2FA, safe-retry uploads |
-| Diagnostics | `manage.py` | `doctor` / `status` / `library` / `insights` / `cleanup` |
-| Reliability | `net.py`, `notify.py` | jittered backoff, GH annotations, webhook |
-
-**Double-post protection (layered):**
-1. a `publishing` row is written *before* the upload starts;
-2. uploads retry only after confirming the caption's first line is not live;
-3. every run reconciles stale rows against the profile before anything else;
-4. daily cap + minimum gap + last-12-posts caption dedupe.
-
-## Install (local, optional — CI does everything)
+## Quick start
 
 ```powershell
-cd d:\18instaautomater
 python -m venv venv
 venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-copy .env.example .env      # fill in credentials
+copy .env.example .env          # fill in credentials
+python -m pytest -q             # baseline must be green
+python manage.py doctor
+python pipeline.py --dry-run    # real generation, NO publishing
 ```
 
-## Run locally
+## Output mode
+
+| Mode | Command | Result |
+|---|---|---|
+| **Reel (default)** | `python pipeline.py` | composed 1080×1920 quote image → short MP4 + trending catalog audio |
+| Photo | `python pipeline.py --mode photo` | static quote image with trending catalog audio |
+| Build only | `python pipeline.py --dry-run` | real image + composed output, no upload |
+| Strict | `python pipeline.py --strict` | refuses placeholders and refusals |
+| Legacy Reel | `python pipeline.py --mode legacy-reel` | original FFmpeg video/theme workflow |
+
+Reel mode uses `generate_video.still_video()` to turn the composed JPEG into a
+silent 9–18 s MP4 with a slow camera move; instagrapi then attaches the catalog
+track with `clip_upload_with_music()`. Your quote bank and master character
+prompt are used in every mode.
+
+## Quote bank
+
+`assets/quotes/approved.json` is the single source of approved lines. Currently
+300 user-approved entries (`u001`–`u300`); add more with `quote_bank.add_lines()`
+or by editing the JSON. The application **never** asks an LLM to invent
+replacement quotes.
 
 ```powershell
-python pipeline.py                  # full cycle (generate -> render -> post)
-python pipeline.py --dry-run        # build only, never posts
-python pipeline.py --skip-generate  # reuse newest image in assets/images
-python pipeline.py --theme fitness  # force a theme
-python manage.py doctor             # is everything wired up?
-python manage.py status             # recent posts + today's count
-python -m pytest -q                 # test suite (no network)
+python manage.py quotes                       # counts + fingerprint
+python -c "import quote_bank; print(quote_bank.add_lines('assets/quotes/approved.json', [{'text':'Your new approved line here','mood':'flirty'}]))"
 ```
 
-## GitHub Actions setup
+A line is claimed atomically in `quote_usage` before generation, so two
+concurrent runs cannot pick the same line. When the bank runs low a warning is
+emitted; when it is exhausted the run fails loudly instead of silently filling
+with weak lines.
 
-1. Push this folder to a **private** GitHub repo (default branch `main`).
-2. Settings → Secrets and variables → **Actions**:
+## Character identity (important limitation)
 
-   | Secret | Required | Value |
-   |---|---|---|
-   | `IG_USERNAME_1` / `IG_PASSWORD_1` / `IG_2FA_SECRET_1` | yes | instagrapi login for @xene.ai |
-   | `LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL` | yes | Gemini (OpenAI-compatible) |
-   | `NOTIFY_WEBHOOK_URL` | no | Discord/Slack failure alerts |
-   | `IG_USERNAME_2` … | no | second account for rotation |
+`character/profile.py::MASTER_PROFILE` is the fixed identity foundation: fictional
+adult woman, 25, South Asian/Indian appearance, fair-to-medium luminous skin,
+long wavy dark-chocolate hair, round full-cheeked soft oval face, large almond
+dark-brown eyes, full lips, full-figured curvy hourglass build. It is always
+prepended verbatim to every prompt by `character/variations.py::build_prompt`.
 
-   Variables (Settings → Variables): `IG_HANDLE_1` (watermark, default
-   `@xene.ai`), `DAILY_CAP_PER_ACCOUNT` (6), `MIN_GAP_MINUTES` (120).
+**A fixed seed and repeated wording do NOT guarantee the same face.** The
+verified Perchance wrapper exposes only `prompt`, `negative_prompt`, `style`,
+`aspect_ratio`, `guidance_scale`, `seed` and `num_images` — there is **no
+reference-image field**. The adapter records `reference_images_supported=False`
+rather than pretending otherwise. For true face locking, supply an
+identity-capable provider behind `image_providers/base.py::ImageProvider`; the
+character profile already carries `reference_images` and version metadata for
+that purpose.
 
-3. Settings → Actions → General → **Workflow permissions** → *Read and write*
-   (the workflow commits `data/engine.db` back).
-4. Actions → **Scheduled reel post** → *Run workflow* with `dry_run` ticked →
-   inspect the artifact. Then run it unticked for the first real post.
-5. Let the schedule take over (6×/day at :23 past every 4th hour).
+## Image providers
 
-`checker.yml` runs hourly and re-dispatches the post workflow whenever no
-successful run exists in the last 2 hours — the engine's own guards make the
-extra dispatch harmless.
+| Provider | Config | Credentials | Reference image |
+|---|---|---|---|
+| `perchance` (default) | `IMAGE_PROVIDER=perchance`, local wrapper at `PERCHANCE_URL` | none | **not supported** |
+| `nvidia` | `IMAGE_PROVIDER=nvidia`, `NVIDIA_API_KEY` | NVIDIA NIM key | not supported |
+| `placeholder` | `IMAGE_PROVIDER=placeholder`, `ALLOW_PLACEHOLDER=1` | none | dev/test only |
 
-### First-login note
+Run the Perchance wrapper locally:
 
-The first CI run performs a fresh login from a GitHub datacenter IP;
-Instagram may raise a challenge. If that happens: log in from your phone,
-complete any verification, delete `sessions/` cache (Actions → Caches), and
-re-run. Afterwards the cached session avoids most logins.
+```powershell
+git clone https://github.com/afrozthalam/Perchance-API.git
+pip install -r Perchance-API/requirements.txt
+python Perchance-API/app.py
+# wait until http://127.0.0.1:8000/v1/health reports "ready": true
+```
 
-## Configuration
+The wrapper drives a background Chrome session against Perchance; review that
+project's terms before production use. It has no API key and no documented rate
+limit. The adapter applies health checks, timeouts, bounded retries, image-byte
+validation and atomic saves. Failed generations are never marked successful.
 
-- `config.py` — cadence, video, fonts, Perchance, LLM, switches
-- `themes.py` — themes: Perchance prompts + line mood + music pool
-- `lines.py` — seed lines (3 moods × 30), CTAs, hashtags, cliché list
-- `.env` — credentials and secrets only
+## Composition & validation
 
-## Music
+`compose_image.py` resizes/crops the generated photo to 1080×1920, adds a
+gaussian scrim, wraps the quote with the shared `generate_video.layout()` logic
+(Anton font), and writes a sidecar JSON with the exact lines rendered.
+`validate.py::validate_final_image` checks existence, openability, dimensions,
+minimum bytes, non-flat pixels, a non-placeholder filename and the sidecar
+quote match. Text presence is verified via metadata (no OCR), which is stated
+explicitly rather than overclaimed.
 
-15 tracks by Kevin MacLeod (incompetech.com), CC BY 4.0 — attribution is
-appended to every caption automatically (`MUSIC_CREDIT` in `config.py`).
+## Music on photo posts (trending audio)
 
-## Troubleshooting
+Static image posts cannot carry an audio stream by themselves, but the installed
+`instagrapi` (>= 3.2) supports attaching an **Instagram catalog track** to a feed
+photo via `photo_upload_with_music(..., track=...)`. The pipeline therefore:
 
-- **`python manage.py doctor`** first — it checks ffmpeg/libass, fonts, DB,
-  accounts, LLM, Perchance, library and the last render.
-- **ffmpeg not found**: set `FFMPEG_BIN` / `FFPROBE_BIN` in `.env`.
-- **Challenge required**: complete it in the app, delete
-  `sessions/<username>.json`, re-run.
-- **Perchance down**: CI fails the run by design (`--strict`); the hourly
-  checker retries automatically.
-- **Silent reels**: no files in `assets/music/` — the pools ship with the
-  repo, make sure they were committed.
-- **Pause everything**: set `KILL_SWITCH=1` (repo variable) — runs skip
-  cleanly without failing.
+1. discovers tracks with `music/top_trends` (falling back to `music/trending`,
+   or `music/audio_global_search` when `MUSIC_SOURCE=search`),
+2. prefers a track not used recently (LRU via `used_assets`),
+3. publishes the composed JPEG with that catalog track,
+4. records `prompt_metadata.music` (track id/title/artist) in the post row.
 
-## Disclaimer
+The first post had no music because the original spec produced static images and
+the publisher used plain `photo_upload()` — there was no audio path. Set
+`MUSIC_ENABLED=1` (default) to attach trending audio; `MUSIC_SOURCE=off` keeps
+posts silent. Music discovery is fail-soft: if the catalog is unavailable the
+post is still published, with a note in the run report. Instagram shows the
+track attribution on the post automatically, so no manual caption credit is
+needed.
 
-Unofficial automation framework. You are solely responsible for the content
-you post and for complying with Instagram's Community Guidelines and Terms
-of Service. The author is not responsible for account bans or data loss.
+## Instagram authentication
+
+Session/cookie based via `instagrapi` only — no Graph API. Sessions are cached
+at `sessions/<username>.json`, never committed. `ensure_session` validates the
+session before upload; `upload_photo_post` uses `photo_upload` with a fail-fast
+challenge path and a duplicate check after each failed attempt. Secrets live in
+`.env` locally and GitHub Secrets in CI. `python manage.py session` shows only
+cache metadata, never session contents.
+
+## Scheduling
+
+`.github/workflows/post.yml` keeps the original six crons/day (`23 */4 * * *`)
+with `concurrency.cancel-in-progress: false`, plus `checker.yml` which
+re-dispatches after two hours of no success. The engine's own guards (daily cap,
+minimum gap, duplicate caption, crash reconciliation) make redundant dispatches
+harmless.
+
+## Diagnostics
+
+```powershell
+python manage.py doctor     # ffmpeg, fonts, DB, accounts, provider, library
+python manage.py status     # recent posts and counts
+python manage.py quotes     # quote bank status
+python manage.py preview    # prompt + composition from a local image, no network
+python manage.py generate   # one real generated image through the adapter
+python manage.py session    # session cache metadata only
+python manage.py library
+python manage.py insights
+python manage.py cleanup
+```
+
+## Database
+
+`data/engine.db` (SQLite/WAL) is preserved, never reset. `migrations/001_add_vertical.py`
+additively adds lifecycle columns to `posts` and a `quote_usage` table. It is
+idempotent and runs automatically on `db.connect()`. Legacy rows and generated
+lines are untouched. Rollback: restore `data/engine.db` from your backup and
+check out `master`.
+
+## Warnings
+
+1. Instagram automation can violate Instagram's Terms of Service and risk bans.
+2. Keep content non-explicit. The master negative prompt blocks nudity and
+   explicit material. The wrapper itself bypasses Perchance content-warning
+   screens — review that decision before production use.
+3. Placeholder images are refused in production (`--strict`, `ALLOW_PLACEHOLDER=0`).
+4. No live Instagram post is performed during implementation; publishing
+   requires explicit approval after the dry run.

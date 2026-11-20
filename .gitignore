@@ -13,6 +13,8 @@ assets/output/
 assets/tmp/
 assets/images/
 assets/overlay/
+assets/final/
+assets/failed/
 
 # SQLite state IS committed (duplicate-post protection + rotation memory),
 # but the WAL sidecar files are transient.

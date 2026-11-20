@@ -132,3 +132,81 @@ def validate_video(path, width: int = VIDEO_WIDTH, height: int = VIDEO_HEIGHT,
         reasons.append("moov atom is not before mdat (need +faststart)")
 
     return not reasons, reasons, info
+
+
+def validate_final_image(path, expected_size=(1080, 1920), min_bytes=None,
+                         must_contain_quote=None) -> Tuple[bool, list, dict]:
+    """
+    Pre-publish validation for a composed static quote image.
+
+    Returns (ok, reasons, info). Checks existence, PIL decode, resolution,
+    minimum byte size, placeholder guards, a basic flat-colour corruption
+    guard, and — when must_contain_quote is given — the composition sidecar
+    next to the image (path.with_suffix('.json')). Text is verified via that
+    sidecar metadata, not OCR.
+    """
+    reasons: list = []
+    info: dict = {}
+    p = Path(path)
+    if not p.exists():
+        return False, ["file does not exist"], info
+
+    size = p.stat().st_size
+    info["bytes"] = size
+    if min_bytes is None:
+        from config import COMPOSE_MIN_BYTES
+        min_bytes = COMPOSE_MIN_BYTES
+    if size < min_bytes:
+        reasons.append(f"file too small ({size} bytes, min {min_bytes})")
+
+    # Placeholder guard — imported lazily to avoid a circular import.
+    try:
+        import compose_image
+        if compose_image.is_placeholder_image(p):
+            reasons.append("image is a placeholder")
+    except Exception as e:  # noqa: BLE001
+        reasons.append(f"placeholder check failed: {e}")
+
+    try:
+        from PIL import Image
+
+        with Image.open(p) as im:
+            im.verify()
+        with Image.open(p) as im2:
+            im2.load()
+            info["size"] = tuple(im2.size)
+            info["mode"] = im2.mode
+            if tuple(im2.size) != tuple(expected_size):
+                reasons.append(
+                    f"resolution {im2.size[0]}x{im2.size[1]}, "
+                    f"need {expected_size[0]}x{expected_size[1]}")
+            extrema = im2.convert("RGB").getextrema()
+            if all(lo == hi for lo, hi in extrema):
+                reasons.append("image is a flat single color")
+    except Exception as e:  # noqa: BLE001
+        reasons.append(f"PIL decode failed: {e}")
+        return False, reasons, info
+
+    if must_contain_quote:
+        sidecar = p.with_suffix(".json")
+        if not sidecar.exists():
+            reasons.append("no composition metadata")
+        else:
+            try:
+                meta = json.loads(sidecar.read_text(encoding="utf-8"))
+                lines_field = meta.get("lines") or []
+                joined = " ".join(str(x) for x in lines_field)
+                from lines import normalise, strip_emoji
+
+                first = next(
+                    (ln for ln in str(must_contain_quote).splitlines()
+                     if ln.strip()),
+                    str(must_contain_quote),
+                )
+                needle = normalise(strip_emoji(first))
+                if not needle or needle not in normalise(joined):
+                    reasons.append("quote text not found in composition metadata")
+            except Exception as e:  # noqa: BLE001
+                reasons.append(f"composition metadata invalid: {e}")
+
+    return not reasons, reasons, info

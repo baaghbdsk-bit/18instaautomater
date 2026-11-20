@@ -1,4 +1,4 @@
-name: Scheduled reel post
+name: Scheduled quote post
 
 on:
   schedule:
@@ -115,12 +115,18 @@ jobs:
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
           NOTIFY_WEBHOOK_URL: ${{ secrets.NOTIFY_WEBHOOK_URL }}
           DAILY_CAP_PER_ACCOUNT: ${{ vars.DAILY_CAP_PER_ACCOUNT || '6' }}
-          MIN_GAP_MINUTES: ${{ vars.MIN_GAP_MINUTES || '120' }}
+          MIN_GAP_MINUTES: ${{ vars.MIN_GAP_MINUTES || '0' }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+          IMAGE_PROVIDER: ${{ vars.IMAGE_PROVIDER || 'perchance' }}
+          PERCHANCE_URL: ${{ vars.PERCHANCE_URL || 'http://127.0.0.1:8000' }}
+          PERCHANCE_STYLE: ${{ vars.PERCHANCE_STYLE || 'Cinematic' }}
+          QUOTE_LOW_WATERMARK: ${{ vars.QUOTE_LOW_WATERMARK || '20' }}
+          CHARACTER_ID: ${{ vars.CHARACTER_ID || 'meera-v1' }}
+          ALLOW_PLACEHOLDER: '0'
         run: |
-          THEME_ARG=""
-          if [ -n "${{ inputs.theme }}" ]; then THEME_ARG="--theme ${{ inputs.theme }}"; fi
-          python pipeline.py --strict --slot "${{ inputs.slot || 'cron' }}" $THEME_ARG
+          EXTRA_ARGS=""
+          if [ -n "${{ inputs.theme }}" ]; then EXTRA_ARGS="$EXTRA_ARGS --theme ${{ inputs.theme }}"; fi
+          python pipeline.py --strict --slot "${{ inputs.slot || 'cron' }}" $EXTRA_ARGS
 
       - name: Upload run artifacts
         if: always()
@@ -130,6 +136,7 @@ jobs:
           path: |
             assets/output/*.mp4
             assets/images/*.jpg
+            assets/final/*.jpg
             perchance.log
           retention-days: 3
           if-no-files-found: ignore

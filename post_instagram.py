@@ -25,7 +25,13 @@ from instagrapi.exceptions import (
     TwoFactorRequired,
 )
 
-from config import SESSIONS_DIR
+from config import (
+    MUSIC_LIMIT,
+    MUSIC_SEARCH_QUERY,
+    MUSIC_SOURCE,
+    MUSIC_TRENDING_PRODUCT,
+    SESSIONS_DIR,
+)
 from net import with_retry
 
 SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
@@ -239,10 +245,279 @@ def post_story(cl: Client, video_path) -> bool:
         return False
 
 
-def logout_all(clients: dict) -> None:
+def logout_all(clients: dict, invalidate: bool = False) -> None:
+    """Release clients without invalidating the saved session by default.
+
+    ``cl.logout()`` tells Instagram to kill the server-side session; calling it
+    after a successful post makes the cached sessions/<username>.json unusable
+    and forces a fresh login on every run. Keep sessions reusable unless the
+    caller explicitly asks to invalidate them.
+    """
     for name, cl in clients.items():
+        if invalidate:
+            try:
+                cl.logout()
+                print(f"[-] {name}: logged out (session invalidated)")
+            except Exception:  # noqa: BLE001
+                pass
+        else:
+            print(f"[-] {name}: session kept for reuse (not invalidated)")
+    clients.clear()
+
+
+# ---------------------------------------------------------------------------
+# static image quote posts / session helpers
+# ---------------------------------------------------------------------------
+def _session_username_hint(cl) -> str:
+    """Best-effort username for an error message; never inspects a session file."""
+    try:
+        name = getattr(cl, "username", "")
+        if isinstance(name, str) and name:
+            return name
+    except Exception:  # noqa: BLE001
+        pass
+    return "<username>"
+
+
+def ensure_session(cl) -> str:
+    """
+    Cheap authenticated call that verifies the cached session is still alive.
+
+    Returns the account username. A dead session is reported with an
+    actionable message pointing at the session file to delete — session
+    contents (cookies/tokens) are NEVER logged or included in the error.
+    """
+    try:
+        info = cl.account_info()
+    except LoginRequired:
+        name = _session_username_hint(cl)
+        raise RuntimeError(
+            f"Instagram session expired — delete sessions/{name}.json "
+            "and re-login") from None
+    except Exception as e:  # noqa: BLE001
+        raise RuntimeError(
+            f"Instagram session check failed ({type(e).__name__}): {e}") from e
+    return getattr(info, "username", "") or ""
+
+
+def upload_photo_post(cl, username: str, image_path, caption: str,
+                      attempts: int = 3, track=None) -> dict:
+    """
+    Publish a static image quote post with safe retry, returning
+    {ok, pk, code, recovered, error, attempts}.
+
+    Before every attempt the cached session is verified and the image is
+    confirmed present and non-empty. Auth/challenge failures fail fast;
+    network failures back off and — crucially — check whether the post
+    actually went live before retrying, so a retry can never double-post.
+    """
+    path = str(image_path)
+    image_file = Path(path)
+    last_err = None
+    attempts_made = 0
+
+    for i in range(attempts):
+        # A dead session is a definite failure: never retry into a challenge.
         try:
-            cl.logout()
-            print(f"[-] {name}: logged out")
-        except Exception:  # noqa: BLE001
-            pass
+            ensure_session(cl)
+        except Exception as e:  # noqa: BLE001 — includes wrapped LoginRequired
+            return {"ok": False, "pk": None, "code": "", "recovered": False,
+                    "error": f"session check failed: {type(e).__name__}: {e}",
+                    "attempts": attempts_made}
+
+        if not image_file.is_file() or image_file.stat().st_size == 0:
+            return {"ok": False, "pk": None, "code": "", "recovered": False,
+                    "error": f"image file missing or empty: {path}",
+                    "attempts": attempts_made}
+
+        attempts_made += 1
+        try:
+            if track is not None:
+                media = cl.photo_upload_with_music(path, caption=caption,
+                                                   track=track)
+                label = (getattr(track, "title", None)
+                         or (track.get("title") if isinstance(track, dict) else None)
+                         or "catalog track")
+                print(f"    [photo] posted {image_file.name} with music: {label}")
+            else:
+                media = cl.photo_upload(path, caption=caption)
+                print(f"    [photo] posted {image_file.name} (no music)")
+            return {"ok": True, "pk": str(media.pk),
+                    "code": getattr(media, "code", "") or "",
+                    "recovered": False, "error": None,
+                    "attempts": attempts_made}
+        except (ChallengeRequired, LoginRequired) as e:
+            # Auth/challenge problems burn Instagram's patience — stop now.
+            return {"ok": False, "pk": None, "code": "", "recovered": False,
+                    "error": f"{type(e).__name__}: {e}",
+                    "attempts": attempts_made}
+        except Exception as e:  # noqa: BLE001 — network-like failure
+            last_err = e
+            print(f"    [!] photo upload attempt {i + 1}/{attempts} failed: {e}")
+            if i == attempts - 1:
+                break
+            # Back off, then confirm the caption is not already live before
+            # risking a second upload (double-post guard).
+            time.sleep(8 * (i + 1))
+            dup = find_duplicate(cl, username, caption, lookback=10)
+            if dup:
+                print("    [+] upload actually succeeded — found it live "
+                      f"(pk={dup})")
+                return {"ok": True, "pk": dup, "code": "", "recovered": True,
+                        "error": None, "attempts": attempts_made}
+
+    error = (f"{type(last_err).__name__}: {last_err}" if last_err
+             else "unknown upload error")
+    return {"ok": False, "pk": None, "code": "", "recovered": False,
+            "error": error, "attempts": attempts_made}
+
+
+def upload_reel_with_music(cl, username: str, video_path, caption: str,
+                           track=None, attempts: int = 3,
+                           thumbnail=None) -> dict:
+    """Upload a Reel with a catalog track, with the same double-post guard."""
+    path = str(video_path)
+    video_file = Path(path)
+    last_err = None
+    made = 0
+    for i in range(attempts):
+        try:
+            ensure_session(cl)
+        except Exception as e:  # noqa: BLE001
+            return {"ok": False, "pk": None, "code": "", "recovered": False,
+                    "error": f"session check failed: {type(e).__name__}: {e}",
+                    "attempts": made}
+        if not video_file.is_file() or video_file.stat().st_size == 0:
+            return {"ok": False, "pk": None, "code": "", "recovered": False,
+                    "error": f"video file missing or empty: {path}",
+                    "attempts": made}
+        made += 1
+        try:
+            if track is not None:
+                kwargs = {"caption": caption, "track": track}
+                if thumbnail:
+                    kwargs["thumbnail"] = str(thumbnail)
+                media = cl.clip_upload_with_music(path, **kwargs)
+                print(f"    [reel] posted {video_file.name} with music: "
+                      f"{getattr(track, 'title', 'catalog track')}")
+            else:
+                media = cl.clip_upload(path, caption=caption)
+                print(f"    [reel] posted {video_file.name} (no music)")
+            return {"ok": True, "pk": str(media.pk),
+                    "code": getattr(media, "code", "") or "",
+                    "recovered": False, "error": None, "attempts": made}
+        except (ChallengeRequired, LoginRequired) as e:
+            return {"ok": False, "pk": None, "code": "", "recovered": False,
+                    "error": f"{type(e).__name__}: {e}", "attempts": made}
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            print(f"    [!] reel upload attempt {i + 1}/{attempts} failed: {e}")
+            if i == attempts - 1:
+                break
+            time.sleep(8 * (i + 1))
+            dup = find_duplicate(cl, username, caption, lookback=10)
+            if dup:
+                print(f"    [+] upload actually succeeded — found live (pk={dup})")
+                return {"ok": True, "pk": dup, "code": "", "recovered": True,
+                        "error": None, "attempts": made}
+    error = (f"{type(last_err).__name__}: {last_err}" if last_err
+             else "unknown reel upload error")
+    return {"ok": False, "pk": None, "code": "", "recovered": False,
+            "error": error, "attempts": made}
+
+
+def _tracks_from_response(data: dict) -> list:
+    """Parse Track objects from instagrapi's raw music-browser responses."""
+    from instagrapi.extractors import extract_track
+
+    containers: list = []
+    for key in ("items", "tracks", "results", "data"):
+        value = data.get(key) if isinstance(data, dict) else None
+        if isinstance(value, list):
+            containers.append(value)
+        elif isinstance(value, dict):
+            for nested in ("items", "tracks"):
+                if isinstance(value.get(nested), list):
+                    containers.append(value[nested])
+    tracks = []
+    for container in containers:
+        for item in container:
+            raw = item.get("track", item) if isinstance(item, dict) else None
+            if not isinstance(raw, dict) or "dash_manifest" not in raw:
+                continue  # extract_track needs dash_manifest to build a Track
+            try:
+                tracks.append(extract_track(dict(raw)))
+            except Exception:  # noqa: BLE001 — skip malformed catalog entries
+                continue
+    return tracks
+
+
+def find_trending_tracks(cl, source: str | None = None, limit: int | None = None) -> list:
+    """Return Instagram catalog Tracks suitable for a photo post.
+
+    source: 'trending' (default) uses music/top_trends + music/trending;
+            'search' uses MUSIC_SEARCH_QUERY via music/audio_global_search.
+    Never posts, never modifies state. Returns [] when unavailable.
+    """
+    source = (source or MUSIC_SOURCE).lower()
+    limit = int(limit or MUSIC_LIMIT)
+    try:
+        if source == "search":
+            tracks = cl.search_music(MUSIC_SEARCH_QUERY)
+            return list(tracks or [])[:limit]
+        if source == "off":
+            return []
+        data = cl.music_top_trends(product=MUSIC_TRENDING_PRODUCT)
+        tracks = _tracks_from_response(data)
+        if not tracks:
+            data = cl.music_trending(product="feed_post")
+            tracks = _tracks_from_response(data)
+        return tracks[:limit]
+    except Exception as e:  # noqa: BLE001 — music is optional, fail soft
+        print(f"[music] track discovery failed: {type(e).__name__}: {str(e)[:200]}")
+        return []
+
+
+def pick_music_track(cl, used_keys: list | None = None):
+    """Pick a trending catalog track, preferring ones not used recently."""
+    tracks = find_trending_tracks(cl)
+    if not tracks:
+        return None, None
+    keys = [str(getattr(t, "id", "") or getattr(t, "audio_asset_id", ""))
+            for t in tracks]
+    if used_keys:
+        unused = [t for t, k in zip(tracks, keys) if k not in set(used_keys)]
+        if unused:
+            tracks = unused
+    import random
+    track = random.choice(tracks)
+    return track, str(getattr(track, "id", "") or getattr(track, "audio_asset_id", ""))
+
+
+def session_status(account) -> dict:
+    """
+    Read-only status of sessions/<username>.json.
+
+    Only the path and byte size are inspected — file contents are never
+    opened, read or printed.
+    """
+    username = account.get("username", "") or ""
+    path = _session_path(username)
+    size = 0
+    if path.is_file():
+        try:
+            size = path.stat().st_size
+        except OSError:  # noqa: BLE001 — raced deletion / permission
+            size = 0
+    return {"username": username, "cached": size > 0,
+            "path": str(path), "size": size}
+
+
+def preflight_or_login(account, clients: dict) -> Client:
+    """Return the cached client for an account, logging in only when missing."""
+    name = account["name"]
+    if name in clients:
+        return clients[name]
+    cl = login_account(account)
+    clients[name] = cl
+    return cl

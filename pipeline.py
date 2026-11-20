@@ -1,27 +1,36 @@
 """
-pipeline.py — one autonomous reel run (CI entry point).
+pipeline.py — one autonomous glamour quote-IMAGE run (CI entry point).
 
-Order of operations mirrors the reference engine's run.js, so a duplicated
-cron, a delayed runner, or a crash mid-publish can never double-post:
+This is the single orchestration point for the product workflow:
 
-  1. kill switch
-  2. auth preflight (login every usable account)
-  3. crash reconciliation (stale 'publishing' rows resolved against live posts)
-  4. cadence guards (daily cap, minimum gap)
-  5. engagement-refreshed theme pick
-  6. build: line -> image -> music -> render -> validate -> caption
-  7. duplicate-caption check, then publish with safe retry
-  8. record + notify + cleanup
+   1. kill switch
+   2. auth preflight (session/cookie based, via instagrapi)
+   3. crash reconciliation (stale rows resolved against live posts)
+   4. cadence guards (daily cap, minimum gap)
+   5. claim one UNUSED line from the curated quote bank (never an LLM filler)
+   6. build the prompt: fixed master character identity + curated variation
+   7. generate the actual image through the configured provider adapter
+   8. validate the downloaded image (placeholder/real check)
+   9. compose the quote onto the image -> Instagram-ready static image
+  10. validate the final image
+  11. record the full lifecycle in SQLite
+  12. duplicate-caption check, then publish with safe retry (unless dry-run)
+
+The default output is a Reel made from the composed quote image with a trending
+Instagram catalog track. ``--mode photo`` publishes the static image instead;
+``--mode legacy-reel`` keeps the original video/theme flow for compatibility.
 
 Usage:
-  python pipeline.py                 # full run
-  python pipeline.py --dry-run       # build only, never publish
-  python pipeline.py --skip-generate # reuse newest image in assets/images
-  python pipeline.py --strict        # fail instead of posting a placeholder
-  python pipeline.py --theme beach_golden --slot manual
+    python pipeline.py                       # full image-post run
+    python pipeline.py --dry-run             # build only, never publish
+    python pipeline.py --strict              # never accept a placeholder
+    python pipeline.py --mode photo          # static quote image instead
+    python pipeline.py --mode legacy-reel    # original video/theme flow
+    python pipeline.py --variation upper     # force text placement
 """
 
 import argparse
+import json
 import random
 import sys
 import time
@@ -37,41 +46,63 @@ if sys.stdout.encoding and sys.stdout.encoding.lower().replace("-", "") != "utf8
         pass
 
 import db
-import generate_ai_image
-import lines as lines_mod
 import notify
 from config import (
     ACCOUNTS,
+    ALLOW_PLACEHOLDER,
     BASE_DIR,
+    CHARACTER_ID,
+    COMPOSE_VARIANTS,
     DAILY_CAP_PER_ACCOUNT,
     DRY_RUN,
+    FINAL_IMAGES_DIR,
+    IMAGES_DIR,
     KILL_SWITCH,
-    MIN_GAP_MINUTES,
     MUSIC_CREDIT,
+    MUSIC_ENABLED,
+    OUTPUT_DIR,
+    PERCHANCE_ASPECT,
+    PERCHANCE_GUIDANCE,
+    PERCHANCE_NEGATIVE,
+    PERCHANCE_STYLE,
+    QUOTE_LOW_WATERMARK,
     RANDOM_SEED,
     TMP_DIR,
 )
-from generate_video import render_reel
 from post_instagram import (
     find_duplicate,
     login_account,
     logout_all,
     media_info,
+    pick_music_track,
     recent_media,
+    upload_photo_post,
     upload_reel,
+    upload_reel_with_music,
 )
 from themes import THEME_KEYS, theme_meta
 from validate import validate_video
+
+# New product modules (created in this implementation).
+import quote_bank
+from character.consistency import build_consistency, consistency_metadata
+from character.profile import MASTER_PROFILE
+from character.variations import get_variation, select_variation, build_prompt, variation_keys
+from compose_image import compose_quote_image, is_placeholder_image
+from image_providers.base import ImageRequest
+from image_providers.registry import get_provider
+from generate_video import still_video
+from validate import validate_final_image
 
 IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".webp")
 MUSIC_EXTS = (".mp3", ".wav", ".m4a", ".aac")
 
 
 # ---------------------------------------------------------------------------
-# helpers
+# helpers retained from the original engine (kept for backward compatibility)
 # ---------------------------------------------------------------------------
 def newest_image() -> Path | None:
-    files = [p for p in generate_ai_image.IMAGES_DIR.iterdir()
+    files = [p for p in IMAGES_DIR.iterdir()
              if p.is_file() and p.suffix.lower() in IMAGE_EXTS]
     return max(files, key=lambda p: p.stat().st_mtime) if files else None
 
@@ -174,14 +205,16 @@ def collect_insights(clients: dict, limit: int = 8,
 
 
 def reconcile_stale(clients: dict) -> int:
-    """Resolve rows stuck in 'publishing' against the live account."""
-    stale = db.stale_publishing(min_age_minutes=5)
+    """Resolve rows stuck in a non-terminal state against the live account."""
+    getter = getattr(db, "recent_posts_need_recovery", None)
+    stale = getter() if getter else db.stale_publishing(min_age_minutes=5)
     if not stale:
         return 0
 
+    from lines import first_line
+
     live_cache: dict = {}
     recovered = 0
-
     for post in stale:
         acct_name = post.get("account")
         cl = clients.get(acct_name)
@@ -192,13 +225,12 @@ def reconcile_stale(clients: dict) -> int:
             live_cache[acct_name] = recent_media(cl, acct["username"], amount=25)
         live = live_cache[acct_name]
         if live is None:
-            # Fetch failed (network) — defer, never guess.
             print(f"[reconcile] post {post['id']}: profile unreadable, deferring")
             continue
-        target = lines_mod.first_line(post.get("caption_text") or "")
+        target = first_line(post.get("caption_text") or "")
         match = next((m for m in live
                       if target and len(target) >= 8
-                      and lines_mod.first_line(m["caption"]) == target), None)
+                      and first_line(m["caption"]) == target), None)
         if match:
             db.update_post(
                 post["id"], status="published", ig_id=match["pk"],
@@ -208,7 +240,7 @@ def reconcile_stale(clients: dict) -> int:
                 or datetime.now().isoformat(timespec="seconds"))
             recovered += 1
             print(f"[reconcile] post {post['id']} found live -> published")
-        else:
+        elif post.get("status") == "publishing":
             db.update_post(post["id"], status="failed",
                            error="not found on profile during reconciliation")
             print(f"[reconcile] post {post['id']} not live -> failed")
@@ -239,45 +271,91 @@ def report(status: str, post_id, theme, line, info, notes) -> None:
             row("post", post_id or "-"),
             row("theme", theme or "-"),
             row("line", str(line or "-").replace("|", "/")),
-            row("video", (info or {}).get("path", "-")),
-            row("duration", (info or {}).get("duration", "-"))]
+            row("output", (info or {}).get("path", "-"))]
     for n in notes:
         rows.append(row("note", n))
     notify.summary("\n".join(rows))
     notify.set_output("status", status)
     notify.set_output("post_id", str(post_id or ""))
     if status == "failed" and notes:
-        notify.webhook(f"❌ reel-engine run failed: {notes[-1]}")
+        notify.webhook(f"quote-engine run failed: {notes[-1]}")
 
 
 # ---------------------------------------------------------------------------
-# main run
+# image-post workflow
 # ---------------------------------------------------------------------------
-def run(argv=None) -> int:
-    parser = argparse.ArgumentParser(description="Generate + render + post one reel")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Generate + render only, never publish")
-    parser.add_argument("--skip-generate", action="store_true",
-                        help="Reuse the newest image in assets/images")
-    parser.add_argument("--strict", action="store_true",
-                        help="Fail (exit 2) instead of posting a placeholder")
-    parser.add_argument("--theme", choices=THEME_KEYS, default=None,
-                        help="Force a content theme")
-    parser.add_argument("--slot", default="cron",
-                        help="Run label stored in the runs table")
-    parser.add_argument("--force", action="store_true",
-                        help="Publish even if cadence guards would skip")
-    args = parser.parse_args(argv)
+def _select_quote(post_id: int):
+    """Claim one unused approved line atomically. Never invents a line."""
+    bank = quote_bank.load_bank()
+    used = db.used_quote_ids() if hasattr(db, "used_quote_ids") else set()
+    if quote_bank.is_low(bank, used, watermark=QUOTE_LOW_WATERMARK):
+        notify.warn(
+            f"quote bank running low: {quote_bank.unused_count(bank, used)} unused")
+    quote = quote_bank.select_unused(bank, used)
+    if quote is None:
+        raise RuntimeError(
+            "curated quote bank exhausted — add approved lines to "
+            "assets/quotes/approved.json (no LLM filler will be used)")
+    claim = getattr(db, "claim_quote", None)
+    if claim and not claim(quote.id, post_id):
+        # Another worker claimed it between selection and insert — retry once.
+        used = db.used_quote_ids()
+        quote = quote_bank.select_unused(bank, used)
+        if quote is None or not claim(quote.id, post_id):
+            raise RuntimeError("could not atomically claim an unused quote")
+    return quote, bank
 
-    if RANDOM_SEED:
-        random.seed(int(RANDOM_SEED))
 
+def _build_generation_request(quote, variation, seed, consent=True):
+    """Fixed identity first, curated variation second, honest metadata."""
+    prompt = build_prompt(MASTER_PROFILE, variation)
+    consistency = build_consistency(
+        MASTER_PROFILE,
+        seed=seed,
+        reference_images=MASTER_PROFILE.reference_images or None,
+    )
+    return ImageRequest(
+        prompt=prompt,
+        negative_prompt=MASTER_PROFILE.negative_prompt_text(),
+        aspect_ratio=PERCHANCE_ASPECT,
+        width=1080,
+        height=1920,
+        seed=str(seed) if seed is not None else None,
+        model=MASTER_PROFILE.style_preset,
+        num_images=1,
+        reference_images=consistency.reference_images,
+        metadata={
+            "character_id": CHARACTER_ID,
+            "variation": variation.key,
+            "quote_id": quote.id,
+            **consistency_metadata(consistency, MASTER_PROFILE),
+        },
+    )
+
+
+def _character_seed() -> int:
+    """Stable per-character seed for reproducibility (NOT an identity lock)."""
+    key = f"character_seed:{CHARACTER_ID}"
+    raw = db.get_state(key)
+    if raw:
+        try:
+            return int(raw)
+        except ValueError:
+            pass
+    seed = random.randint(0, 2**31 - 1)
+    db.set_state(key, str(seed))
+    return seed
+
+
+def run_image(args) -> int:
+    """Static quote-image workflow. Returns process exit code."""
     dry = args.dry_run or DRY_RUN
     run_id = db.start_run(args.slot)
     clients: dict = {}
     post_id = None
     notes: list = []
-    outcome = {"status": "failed", "theme": None, "line": None, "info": None}
+    outcome = {"status": "failed", "theme": "image-post", "line": None,
+               "info": None}
 
     def finish(status_: str, error: str | None = None) -> None:
         db.finish_run(run_id, status_, post_id=post_id, error=error)
@@ -290,7 +368,7 @@ def run(argv=None) -> int:
             finish("skipped")
             return 0
 
-        # 2. auth preflight
+        # 2. auth preflight (session/cookie based)
         usable = [a for a in ACCOUNTS if a["username"] and a["password"]]
         if not usable and not dry:
             raise RuntimeError("no accounts configured (set IG_USERNAME_1 etc.)")
@@ -300,7 +378,7 @@ def run(argv=None) -> int:
                 clients[acct["name"]] = login_account(acct)
             except Exception as e:  # noqa: BLE001
                 errors.append(f"{acct['name']}: {e}")
-        if usable and not clients:
+        if usable and not clients and not dry:
             raise RuntimeError("login failed for every account — " +
                                "; ".join(errors))
         if errors:
@@ -311,16 +389,7 @@ def run(argv=None) -> int:
         if recovered:
             notes.append(f"reconciled {recovered} stale post(s)")
 
-        # 4. cadence guards
-        if not dry and not args.force:
-            gap = db.minutes_since_last_publish()
-            if gap < MIN_GAP_MINUTES:
-                print(f"[=] Min gap not reached ({gap:.0f} < "
-                      f"{MIN_GAP_MINUTES} min). Skipping.")
-                outcome["status"] = "skipped"
-                finish("skipped", "min-gap")
-                return 0
-
+        # 4. cadence guards (minimum-gap guard removed by owner request)
         account = pick_account(clients)
         if not account and not dry:
             print("[=] Daily cap reached on every account. Skipping.")
@@ -329,90 +398,161 @@ def run(argv=None) -> int:
             return 0
         account = account or (usable[0] if usable else
                               {"name": "dry-run", "username": "(none)",
-                               "handle": "@xene.ai"})
-        used_today = db.count_published_today(account["name"])
+                               "handle": ""})
         print(f"[*] Account : {account['name']} ({account['username']})")
-        print(f"[*] Today   : {used_today}/{DAILY_CAP_PER_ACCOUNT} published")
 
-        # 5. engagement refresh (fail-soft)
-        try:
-            n = collect_insights(clients)
-            if n:
-                notes.append(f"insights refreshed for {n} post(s)")
-        except Exception as e:  # noqa: BLE001
-            print(f"[insights] refresh failed (non-fatal): {e}")
+        # 5. claim one unused approved line
+        post_id = db.insert_post(
+            account=account["name"], theme="image-post", title="",
+            engine="quote-bank", status="pending")
+        quote, _bank = _select_quote(post_id)
+        db.update_post(post_id, title=quote.text, quote_id=quote.id,
+                       quote_text=quote.text, status="quote_selected")
+        outcome["line"] = quote.text
+        print(f"[*] Quote   : {quote.text}  [{quote.id}]")
 
-        # 6a. theme + line
-        theme = choose_theme(args.theme)
-        meta = theme_meta(theme)
-        mood, music_pool_name = meta["mood"], meta["music"]
-        print(f"[*] Theme   : {theme} (mood={mood}, music={music_pool_name})")
-        line, engine = lines_mod.compose(theme, mood)
-        print(f"[*] Line    : {line}  [{engine}]")
-        outcome.update(theme=theme, line=line)
+        # 6. prompt = fixed identity + curated variation
+        used_variations = [r["key"] for r in db.asset_usage("variation")]
+        variation = (get_variation(args.variation) if args.variation else
+                     select_variation(used_variations))
+        db.mark_asset("variation", variation.key)
+        request = _build_generation_request(quote, variation, _character_seed())
+        print(f"[*] Variation: {variation.key} / character {CHARACTER_ID}")
+        print(f"[*] Prompt  : {request.prompt[:180]}...")
+        db.update_post(
+            post_id, status="image_generating",
+            prompt_text=request.prompt,
+            prompt_metadata=json.dumps(request.metadata, ensure_ascii=False),
+            provider=request.metadata.get("provider", "config"),
+            model=request.model, seed=request.seed)
 
-        post_id = db.insert_post(account=account["name"], theme=theme,
-                                 title=line, engine=engine, status="building")
-
-        # 6b. image
+        # 7. image generation through the provider adapter
         if args.skip_generate:
-            image, source = newest_image(), "existing"
-            if image is None:
+            raw_path = newest_image()
+            if raw_path is None:
                 raise RuntimeError("--skip-generate set but no images found")
+            source = "existing"
         else:
-            image, source = generate_ai_image.generate(theme=theme)
-        if args.strict and source == "placeholder":
-            db.update_post(post_id, status="failed",
-                           error="strict: placeholder image")
-            raise RuntimeError("STRICT: image generation fell back to "
-                               "placeholder — refusing to build")
+            provider = get_provider()
+            print(f"[*] Provider: {provider.name}")
+            result = provider.generate(request)
+            if not result.ok:
+                raise RuntimeError(f"image generation failed: {result.error}")
+            raw_path = Path(result.path)
+            source = provider.name
+            db.update_post(post_id, attempts=result.metadata.get("attempts", 0),
+                           error_stage=None)
+        print(f"[*] Raw image: {raw_path}")
 
-        # 6c. music
-        track = pick_track(theme)
+        # 8. reject placeholders (never publish them as real AI images)
+        if is_placeholder_image(raw_path) or source == "placeholder":
+            if args.strict or not ALLOW_PLACEHOLDER:
+                raise RuntimeError(
+                    "refusing to publish a placeholder image; image generation "
+                    "must succeed or the run must fail")
+            notes.append("WARNING: placeholder image used (dev mode only)")
 
-        # 6d. render
-        info = render_reel(
-            image, track, line, mode="story",
-            variant=random.choice(["upper", "center", "lower"]),
-            output_name=f"reel_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4")
-        outcome["info"] = info
-        db.update_post(post_id, video_path=info["path"], image_path=str(image),
-                       image_source=source, music_path=info["music"],
-                       variant=info["variant"], duration_sec=info["duration"])
+        # 9. compose the quote onto the image
+        variant = args.variation if args.variation in COMPOSE_VARIANTS else "lower"
+        composed = compose_quote_image(
+            raw_path, quote.text, output_path=None, variant=variant,
+            handle=account.get("handle", ""))
+        if not composed.get("ok"):
+            raise RuntimeError(f"composition failed: {composed.get('error')}")
+        final_path = Path(composed["path"])
+        db.update_post(
+            post_id, generation_status="downloaded", generation_path=str(raw_path),
+            image_path=str(raw_path), image_source=source,
+            composition_status="complete", final_image_path=str(final_path),
+            video_path=str(final_path), status="composition_complete")
 
-        # 6e. validate
-        ok, reasons, vinfo = validate_video(info["path"])
+        # 10. validate the final image
+        ok, reasons, vinfo = validate_final_image(
+            final_path, must_contain_quote=quote.text)
         if not ok:
-            raise RuntimeError("video validation failed: " + ", ".join(reasons))
-        print(f"[+] Valid reel: {vinfo['duration']}s, "
-              f"{vinfo['bytes'] / 1e6:.1f} MB")
+            raise RuntimeError("final image validation failed: " +
+                               ", ".join(reasons))
+        vw, vh = vinfo.get("size", (1080, 1920))
+        print(f"[+] Valid image: {vw}x{vh}, "
+              f"{vinfo['bytes']/1e6:.1f} MB")
 
-        # 6f. caption
-        credit = MUSIC_CREDIT if track else ""
-        caption = lines_mod.build_caption(theme, mood, line, credit=credit)
-        db.update_post(post_id, caption_text=caption, status="built")
+        # 10b. turn the composed image into a Reel (default output mode)
+        publish_path = final_path
+        if args.mode == "reel":
+            reel_path = OUTPUT_DIR / (
+                f"reel_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4")
+            reel = still_video(final_path, reel_path)
+            vok, vreasons, vinfo2 = validate_video(reel["path"])
+            if not vok:
+                raise RuntimeError("reel validation failed: " +
+                                   ", ".join(vreasons))
+            publish_path = Path(reel["path"])
+            print(f"[+] Valid reel: {vinfo2['duration']}s, "
+                  f"{vinfo2['bytes'] / 1e6:.1f} MB")
+            outcome["info"] = {"path": str(publish_path),
+                               "image": str(final_path), **vinfo2}
+            db.update_post(post_id, output_kind="reel",
+                           video_path=str(publish_path),
+                           duration_sec=reel["duration"])
+        else:
+            outcome["info"] = {"path": str(final_path), **vinfo}
+        db.update_post(post_id, status="ready_to_publish")
+
+        # 11. caption (music credit is not applicable to static image posts)
+        from lines import build_caption
+        caption = build_caption("image-post", quote.mood or "flirty",
+                                quote.text, credit="")
+        db.update_post(post_id, caption_text=caption)
 
         if dry:
-            print("[=] Dry run: not publishing.")
+            print(f"[=] Dry run: not publishing. Output: {publish_path}")
             print(caption)
             outcome["status"] = "dry-run"
             finish("dry-run")
             return 0
 
-        # 7a. duplicate guard
+        # 12a. duplicate guard
         cl = clients[account["name"]]
         dup = find_duplicate(cl, account["username"], caption, lookback=12)
         if dup:
             db.update_post(post_id, status="skipped",
                            error=f"duplicate caption already live (pk={dup})")
-            print("[=] Identical opening line already live — skipping.")
             outcome["status"] = "skipped"
             finish("skipped", "duplicate-caption")
             return 0
 
-        # 7b. publish — row is written to 'publishing' BEFORE the upload
+        # 12b. optional Instagram catalog music (works on photo posts)
+        track = None
+        if MUSIC_ENABLED:
+            track, track_id = pick_music_track(cl)
+            if track is not None:
+                try:
+                    meta = json.loads((db.get_post(post_id) or {}).get(
+                        "prompt_metadata") or "{}")
+                except (ValueError, TypeError):
+                    meta = {}
+                meta["music"] = {
+                    "track_id": track_id,
+                    "title": getattr(track, "title", ""),
+                    "artist": getattr(track, "display_artist", ""),
+                    "source": "instagram_catalog",
+                }
+                db.update_post(post_id, prompt_metadata=json.dumps(
+                    meta, ensure_ascii=False))
+                print(f"[*] Music : {meta['music']['title']} — "
+                      f"{meta['music']['artist']}")
+            else:
+                notes.append("trending music unavailable — posting without audio")
+
+        # 12c. publish
         db.update_post(post_id, status="publishing")
-        res = upload_reel(cl, account["username"], info["path"], caption)
+        if args.mode == "reel":
+            res = upload_reel_with_music(cl, account["username"], publish_path,
+                                         caption, track=track,
+                                         thumbnail=str(final_path))
+        else:
+            res = upload_photo_post(cl, account["username"], publish_path,
+                                    caption, track=track)
         if res["ok"]:
             permalink = (f"https://www.instagram.com/p/{res['code']}/"
                          if res.get("code") else None)
@@ -427,17 +567,127 @@ def run(argv=None) -> int:
             finish("published")
             return 0
 
-        db.update_post(post_id, status="failed", error=res["error"])
+        db.update_post(post_id, status="failed", error=res["error"],
+                       error_stage="publish")
         raise RuntimeError(f"upload failed: {res['error']}")
 
     except Exception as e:  # noqa: BLE001 — top-level failure reporting
+        msg = str(e)[:800]
+        if post_id is not None:
+            try:
+                db.update_post(post_id, status="failed", error=msg,
+                               error_stage="pipeline")
+            except Exception:  # noqa: BLE001
+                pass
+        notify.error(msg)
+        notes.append(msg)
+        outcome["status"] = "failed"
+        finish("failed", msg)
+        return 2 if (args.strict and "placeholder" in msg) else 1
+    finally:
+        if clients:
+            logout_all(clients)
+        report(outcome["status"], post_id, outcome["theme"], outcome["line"],
+               outcome["info"], notes)
+        cleanup_temp()
+        db.checkpoint()
+
+
+def run_reel(args) -> int:
+    """Legacy video Reel flow retained for backward compatibility."""
+    import generate_ai_image
+    from generate_video import render_reel
+
+    dry = args.dry_run or DRY_RUN
+    run_id = db.start_run(args.slot)
+    clients: dict = {}
+    post_id = None
+    notes: list = []
+    outcome = {"status": "failed", "theme": None, "line": None, "info": None}
+
+    def finish(status_: str, error: str | None = None) -> None:
+        db.finish_run(run_id, status_, post_id=post_id, error=error)
+
+    try:
+        if KILL_SWITCH or (BASE_DIR / "data" / "KILL_SWITCH").exists():
+            outcome["status"] = "skipped"
+            finish("skipped")
+            return 0
+        usable = [a for a in ACCOUNTS if a["username"] and a["password"]]
+        if not usable and not dry:
+            raise RuntimeError("no accounts configured")
+        for acct in usable:
+            try:
+                clients[acct["name"]] = login_account(acct)
+            except Exception as e:  # noqa: BLE001
+                notes.append(f"{acct['name']}: {e}")
+        recover = getattr(db, "recent_posts_need_recovery", None)
+        if recover:
+            recover()
+        else:
+            db.stale_publishing(min_age_minutes=5)
+        account = pick_account(clients)
+        if not account and not dry:
+            outcome["status"] = "skipped"
+            finish("skipped", "daily-cap")
+            return 0
+        account = account or {"name": "dry-run", "username": "(none)",
+                              "handle": "@xene.ai"}
+        theme = choose_theme(args.theme)
+        meta = theme_meta(theme)
+        import lines as lines_mod
+        line, engine = lines_mod.compose(theme, meta["mood"])
+        outcome.update(theme=theme, line=line)
+        post_id = db.insert_post(account=account["name"], theme=theme,
+                                 title=line, engine=engine, status="building")
+        if args.skip_generate:
+            image, source = newest_image(), "existing"
+            if image is None:
+                raise RuntimeError("--skip-generate set but no images found")
+        else:
+            image, source = generate_ai_image.generate(theme=theme)
+        if args.strict and source == "placeholder":
+            raise RuntimeError("STRICT: placeholder image refused")
+        track = pick_track(theme)
+        info = render_reel(
+            image, track, line, mode="story",
+            variant=random.choice(["upper", "center", "lower"]),
+            output_name=f"reel_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4")
+        outcome["info"] = info
+        db.update_post(post_id, video_path=info["path"], image_path=str(image),
+                       image_source=source, music_path=info["music"],
+                       variant=info["variant"], duration_sec=info["duration"])
+        ok, reasons, vinfo = validate_video(info["path"])
+        if not ok:
+            raise RuntimeError("video validation failed: " + ", ".join(reasons))
+        credit = MUSIC_CREDIT if track else ""
+        caption = lines_mod.build_caption(theme, meta["mood"], line, credit=credit)
+        db.update_post(post_id, caption_text=caption, status="built")
+        if dry:
+            outcome["status"] = "dry-run"
+            finish("dry-run")
+            return 0
+        cl = clients[account["name"]]
+        if find_duplicate(cl, account["username"], caption, lookback=12):
+            outcome["status"] = "skipped"
+            finish("skipped", "duplicate-caption")
+            return 0
+        db.update_post(post_id, status="publishing")
+        res = upload_reel(cl, account["username"], info["path"], caption)
+        if res["ok"]:
+            db.update_post(post_id, status="published", ig_id=res.get("pk"),
+                           published_at=datetime.now().isoformat(
+                               timespec="seconds"))
+            outcome["status"] = "published"
+            finish("published")
+            return 0
+        raise RuntimeError(f"upload failed: {res['error']}")
+    except Exception as e:  # noqa: BLE001
         msg = str(e)[:800]
         notify.error(msg)
         notes.append(msg)
         outcome["status"] = "failed"
         finish("failed", msg)
-        if args.strict and "placeholder" in msg:
-            return 2
         return 1
     finally:
         if clients:
@@ -446,6 +696,37 @@ def run(argv=None) -> int:
                outcome["info"], notes)
         cleanup_temp()
         db.checkpoint()
+
+
+def run(argv=None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Generate, compose and publish one glamour quote image")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Build only, never publish")
+    parser.add_argument("--skip-generate", action="store_true",
+                        help="Reuse the newest generated image in assets/images")
+    parser.add_argument("--strict", action="store_true",
+                        help="Never accept a placeholder; fail instead")
+    parser.add_argument("--mode", choices=["reel", "photo", "legacy-reel"],
+                        default="reel",
+                        help="Output mode (reel = composed image as Reel + trending audio, default)")
+    parser.add_argument("--theme", default=None,
+                        help="Legacy theme (only used with --mode legacy-reel)")
+    parser.add_argument("--variation", default=None,
+                        choices=COMPOSE_VARIANTS,
+                        help="Force text placement variant")
+    parser.add_argument("--slot", default="cron",
+                        help="Run label stored in the runs table")
+    parser.add_argument("--force", action="store_true",
+                        help="Publish even if cadence guards would skip")
+    args = parser.parse_args(argv)
+
+    if RANDOM_SEED:
+        random.seed(int(RANDOM_SEED))
+
+    if args.mode == "legacy-reel":
+        return run_reel(args)
+    return run_image(args)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,2406 @@
+{
+  "version": 1,
+  "source": "user-approved-bank",
+  "lines": [
+    {
+      "id": "u001",
+      "text": "I have a sweet face, a wicked imagination and absolutely no intention of explaining either.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u002",
+      "text": "Don't let my innocent smile fool you. My thoughts rarely behave.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u003",
+      "text": "I wasn't dressed to impress everyone. Just the ones with interesting imaginations.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u004",
+      "text": "I love being the reason someone's thoughts suddenly become inappropriate.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u005",
+      "text": "My lips are innocent. The thoughts behind my smile are another story.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u006",
+      "text": "I could be your good girl, but I suspect neither of us would enjoy that for long.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u007",
+      "text": "I don't chase attention. I just give people a reason to keep looking.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u008",
+      "text": "If temptation had a dress code, I'd probably be overdressed.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u009",
+      "text": "I know exactly how much trouble a little eye contact can cause.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u010",
+      "text": "I'm not flirting. I'm giving your imagination something to work with.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u011",
+      "text": "My favorite hobby is looking innocent while thinking absolutely otherwise.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u012",
+      "text": "I don't need to say anything naughty. Sometimes a look does the job.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u013",
+      "text": "I have a weakness for compliments that make me blush and thoughts that make me smile.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u014",
+      "text": "Call me trouble, but don't pretend you weren't curious.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u015",
+      "text": "My wardrobe has a talent for starting conversations I never intended to finish.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u016",
+      "text": "I like my men confident, my dresses daring and my conversations dangerously interesting.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u017",
+      "text": "I don't always behave. Fortunately, I rarely promise that I will.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u018",
+      "text": "There's a very mischievous woman hiding behind this pretty smile.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u019",
+      "text": "I enjoy making people wonder whether I'm sweet or simply very good at pretending.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u020",
+      "text": "My imagination doesn't need an invitation. It arrives dressed for the occasion.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u021",
+      "text": "Some girls play hard to get. I prefer playing hard to forget.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u022",
+      "text": "I'm not everyone's fantasy, but I can certainly become someone's distraction.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u023",
+      "text": "I have two moods: looking completely innocent and making absolutely no effort to explain myself.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u024",
+      "text": "If my eyes could talk, you'd probably ask me to repeat myself.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u025",
+      "text": "I like the kind of chemistry that makes innocent conversations feel suspicious.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u026",
+      "text": "My favorite red flag is knowing exactly how irresistible I can be.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u027",
+      "text": "I can behave in public. My imagination, however, has its own schedule.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u028",
+      "text": "I don't need a special occasion to wear something dangerously distracting.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u029",
+      "text": "I'm sweet until someone brings out my mischievous side.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u030",
+      "text": "I love a man who can handle a little teasing without losing his confidence.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u031",
+      "text": "My smile says hello. My eyes are asking much more interesting questions.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u032",
+      "text": "I don't collect hearts. I collect unforgettable reactions.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u033",
+      "text": "There's nothing accidental about the way I leave an impression.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u034",
+      "text": "I like my flirting slow, my confidence high and my intentions mysterious.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u035",
+      "text": "If looking tempting were an Olympic sport, I'd be asking for a gold medal.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u036",
+      "text": "I'm the kind of distraction you remember long after the conversation ends.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u037",
+      "text": "My innocence is occasionally available for public viewing, but never guaranteed.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u038",
+      "text": "I don't have a naughty side. I have a whole personality built around it.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u039",
+      "text": "A little mystery makes me interesting. A little mischief makes me unforgettable.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u040",
+      "text": "I could tell you what's on my mind, but watching you guess is much more entertaining.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u041",
+      "text": "I enjoy making a perfectly respectable conversation feel a little less respectable.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u042",
+      "text": "My favorite outfit is the one that makes me feel like someone's biggest distraction.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u043",
+      "text": "Don't underestimate a woman who can smile sweetly while thinking wickedly.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u044",
+      "text": "I have expensive taste, excellent timing and a rather dangerous imagination.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u045",
+      "text": "I don't break hearts intentionally. I just have a habit of being difficult to forget.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u046",
+      "text": "Sometimes I dress for myself. Sometimes I dress for the reactions.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u047",
+      "text": "I'm not shy. I just enjoy making people earn the interesting parts of me.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u048",
+      "text": "If curiosity had a face, I imagine you'd be looking at mine.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u049",
+      "text": "I like leaving just enough unsaid to keep your imagination busy.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u050",
+      "text": "My idea of innocence is knowing exactly what I'm doing and smiling anyway.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u051",
+      "text": "I'm not difficult to understand. I'm just not giving away the whole story.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u052",
+      "text": "A little teasing never hurt anyone's imagination.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u053",
+      "text": "I love the confidence of a woman who knows she's someone's weakness.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u054",
+      "text": "My dress might be doing the talking, but my expression knows the secret.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u055",
+      "text": "I don't need to be everyone's dream. Being unforgettable is enough.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u056",
+      "text": "I can turn a simple glance into a whole evening of overthinking.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u057",
+      "text": "I'm a limited edition of sweetness, mischief and questionable intentions.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u058",
+      "text": "If you think I'm trouble now, wait until I stop pretending to be innocent.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u059",
+      "text": "I like attention, but I absolutely adore the kind that comes with a blush.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u060",
+      "text": "My favorite conversations are the ones where neither person says everything they're thinking.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u061",
+      "text": "I have a talent for making ordinary moments feel dangerously interesting.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u062",
+      "text": "I don't need to be chased. I prefer being remembered.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u063",
+      "text": "My confidence is attractive. My imagination is considerably less innocent.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u064",
+      "text": "I like being desired, but I love being underestimated first.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u065",
+      "text": "Behind every innocent-looking picture, there's a woman who knows exactly how good she looks.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u066",
+      "text": "I don't always make the first move. Sometimes I just make it impossible to ignore me.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u067",
+      "text": "My personality is 50% sweetness, 50% mischief and 100% difficult to forget.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u068",
+      "text": "I prefer a little tension over a thousand predictable compliments.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u069",
+      "text": "I'm not here to behave like somebody else's idea of a perfect girl.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u070",
+      "text": "A beautiful face gets attention. A wicked mind keeps it interesting.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u071",
+      "text": "I enjoy the little pause people make when they don't know what to say.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u072",
+      "text": "My imagination has no dress code, no bedtime and very questionable manners.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u073",
+      "text": "I don't mind being called dangerous. I just prefer being called unforgettable.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u074",
+      "text": "Some looks are accidental. Mine usually have a little personality behind them.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u075",
+      "text": "I can be an angel in photographs and a complete menace in conversation.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u076",
+      "text": "I don't need to reveal everything to make someone curious.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u077",
+      "text": "There's a reason I never look quite as innocent as I pretend to be.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u078",
+      "text": "I'm not everyone's cup of tea. I'm more like the drink you shouldn't have ordered twice.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u079",
+      "text": "I love the moment when confidence turns into a mischievous smile.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u080",
+      "text": "If temptation had a favourite colour, mine would probably be red.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u081",
+      "text": "I don't flirt for attention. I flirt because sometimes being naughty is entertaining.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u082",
+      "text": "My standards are high, my heels are higher and my thoughts are occasionally questionable.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u083",
+      "text": "I know how to make an ordinary evening feel like a very interesting possibility.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u084",
+      "text": "I'm not an acquired taste. I'm a dangerous first impression.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u085",
+      "text": "My sweetest expressions often hide my most mischievous thoughts.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u086",
+      "text": "I like being the plot twist in someone's otherwise predictable evening.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u087",
+      "text": "Don't ask me to be innocent when you keep looking at me like that.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u088",
+      "text": "I believe in good manners, great outfits and a little harmless trouble.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u089",
+      "text": "The best kind of chemistry is the kind you can feel without having to explain it.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u090",
+      "text": "I don't need to whisper something naughty when my smile already suggests enough.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u091",
+      "text": "I like making people wonder whether I'm flirting or simply enjoying myself.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u092",
+      "text": "My favorite kind of confidence is knowing I can walk away and still be remembered.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u093",
+      "text": "I'm not trying to steal your attention. I'm simply giving it somewhere better to be.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u094",
+      "text": "Some women wear perfume. I prefer leaving an impression.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u095",
+      "text": "I can make a simple hello sound like the beginning of a very interesting story.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u096",
+      "text": "I don't have a poker face. Especially when my imagination gets involved.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u097",
+      "text": "My definition of a good girl depends entirely on who's asking.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u098",
+      "text": "I love being a little unpredictable. It keeps the imagination alive.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u099",
+      "text": "Don't confuse my pretty smile with a promise to behave.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u100",
+      "text": "I may look like a sweet temptation, but I'm definitely not a predictable one.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u101",
+      "text": "My halo keeps slipping, and honestly, I'm done putting it back on.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u102",
+      "text": "I have a perfectly innocent face and a very poorly supervised imagination.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u103",
+      "text": "If I told you everything I was thinking, that innocent smile would make a lot more sense.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u104",
+      "text": "I'm not trouble in disguise. I'm trouble with excellent packaging.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u105",
+      "text": "My favourite kind of tension is the kind that makes silence feel scandalous.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u106",
+      "text": "I don't blush easily, but I do enjoy giving people a reason to.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u107",
+      "text": "I wasn't born with a dirty mind. I simply have an active imagination and excellent company.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u108",
+      "text": "Some fantasies are better left unspoken. Mine usually start with a smile.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u109",
+      "text": "I like my compliments bold enough to make me look away and smile.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u110",
+      "text": "If being a distraction is wrong, I have absolutely no plans to improve.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u111",
+      "text": "My good-girl reputation is hanging on by a very thin thread.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u112",
+      "text": "I'm the reason your imagination needs a little adult supervision.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u113",
+      "text": "I could wear something modest, but then what would happen to your imagination?",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u114",
+      "text": "My smile is polite. The thoughts behind it are considerably less formal.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u115",
+      "text": "I have a talent for turning a harmless compliment into a very interesting conversation.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u116",
+      "text": "I don't need to cross the line. I enjoy standing close enough to make you wonder.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u117",
+      "text": "My favourite game is pretending I didn't notice you staring.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u118",
+      "text": "I'm not blushing because I'm shy. I'm probably enjoying the conversation.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u119",
+      "text": "My imagination deserves its own warning label.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u120",
+      "text": "I like being the reason someone suddenly forgets their well-rehearsed lines.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u121",
+      "text": "If temptation called, I'd probably let it ring twice just to build suspense.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u122",
+      "text": "I have a sweet tooth, but my sense of humour is definitely not sweet.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u123",
+      "text": "I don't do boring chemistry. I prefer the kind that makes people lose their train of thought.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u124",
+      "text": "I could be an angel, but I look far too entertained by the alternative.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u125",
+      "text": "My favourite outfit is confidence with a little bit of scandal.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u126",
+      "text": "I enjoy making a gentleman question how innocent this conversation really is.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u127",
+      "text": "My mind is a beautiful place. Some of the thoughts inside it are absolutely uninvited.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u128",
+      "text": "I don't start rumours. I just give imaginations excellent material.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u129",
+      "text": "I'm not everyone's guilty pleasure, but I wouldn't mind being someone's favourite bad idea.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u130",
+      "text": "I like my flirting with a little danger and absolutely no dull moments.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u131",
+      "text": "If you think my pictures are distracting, imagine trying to hold a conversation with me.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u132",
+      "text": "I have a PhD in looking innocent at the worst possible moment.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u133",
+      "text": "My favourite kind of trouble comes with a charming smile and questionable timing.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u134",
+      "text": "I don't need a confession. Your expression is already giving everything away.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u135",
+      "text": "I love a little mischief before anyone remembers to behave.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u136",
+      "text": "Some people have a dirty mind. I have an entire imagination with questionable management.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u137",
+      "text": "My dress isn't revealing secrets. It's creating questions.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u138",
+      "text": "I can be dangerously charming without saying a single inappropriate word.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u139",
+      "text": "I'm not playing hard to get. I'm playing easy to remember.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u140",
+      "text": "A little temptation never ruined a perfectly good evening.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u141",
+      "text": "I like men who can flirt without needing a dictionary to understand subtlety.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u142",
+      "text": "My innocent act deserves an award for outstanding performance.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u143",
+      "text": "If curiosity gets you into trouble, I must be a very interesting person.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u144",
+      "text": "I don't need to be scandalous every day. Some days my smile is enough.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u145",
+      "text": "My thoughts are private, but my expressions are terrible at keeping secrets.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u146",
+      "text": "I'm not afraid of a little awkward silence. Sometimes it's the most interesting part.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u147",
+      "text": "The only thing more dangerous than my outfit is the imagination it inspires.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u148",
+      "text": "I love a conversation that starts politely and ends with both people smiling suspiciously.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u149",
+      "text": "My sweet side is real. It just doesn't get all the attention.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u150",
+      "text": "I'm not a temptation you accidentally discover. I'm the one you deliberately keep thinking about.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u151",
+      "text": "I have a habit of making perfectly innocent people reveal their mischievous side.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u152",
+      "text": "I don't need an invitation to be unforgettable.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u153",
+      "text": "My favourite accessory is the expression people make when I surprise them.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u154",
+      "text": "If I look too innocent, perhaps you haven't been paying attention.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u155",
+      "text": "I'm not responsible for every naughty thought inspired by a perfectly good photograph.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u156",
+      "text": "My imagination doesn't believe in taking the easy route.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u157",
+      "text": "I like being desired, but I love being the subject of someone's favourite daydream.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u158",
+      "text": "Some girls bring flowers. I bring butterflies and a little trouble.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u159",
+      "text": "I have no intention of making my personality smaller to protect someone's imagination.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u160",
+      "text": "I could give you a warning, but where would the entertainment be?",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u161",
+      "text": "My flirting style is 90% eye contact and 10% pretending I didn't notice the effect.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u162",
+      "text": "I like the kind of attention that makes a confident man suddenly forget his confidence.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u163",
+      "text": "I don't have a guilty conscience. I have a very entertaining imagination.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u164",
+      "text": "If my thoughts were subtitles, this photograph would need an age rating.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u165",
+      "text": "I enjoy being a little too memorable for someone's peace of mind.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u166",
+      "text": "The trouble with looking innocent is that people underestimate how mischievous you can be.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u167",
+      "text": "I'm not trying to make you nervous. I'm just enjoying how easily it happens.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u168",
+      "text": "My favourite colour is the shade of someone's cheeks after a particularly bold compliment.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u169",
+      "text": "I don't chase butterflies. I prefer being the reason they appear.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u170",
+      "text": "I can turn a perfectly ordinary evening into a story you won't tell everyone.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u171",
+      "text": "I'm not a saint, sweetheart. I just have excellent manners when necessary.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u172",
+      "text": "A pretty face is one thing. A wicked sense of humour is an entirely different problem.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u173",
+      "text": "My imagination has excellent taste and absolutely terrible timing.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u174",
+      "text": "I like making people wonder whether they should compliment me or ask what I'm smiling about.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u175",
+      "text": "I don't always say what I'm thinking. Sometimes I prefer watching you figure it out.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u176",
+      "text": "If mischief were a love language, I'd be fluent.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u177",
+      "text": "I have a weakness for dangerously charming conversations and beautifully bad ideas.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u178",
+      "text": "My smile has started more interesting situations than my words ever could.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u179",
+      "text": "I like being someone's favourite distraction, not their temporary entertainment.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u180",
+      "text": "I don't need to be mysterious. I just enjoy leaving a few chapters unread.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u181",
+      "text": "My idea of innocent fun would probably make your imagination work overtime.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u182",
+      "text": "I'm not making promises. I'm making suggestions your imagination can interpret.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u183",
+      "text": "I prefer my evenings spontaneous and my conversations slightly scandalous.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u184",
+      "text": "My face says angel. My sense of humour says absolutely not.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u185",
+      "text": "Some looks deserve a second glance. Mine occasionally deserve a second thought.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u186",
+      "text": "I love a little playful tension. It makes even ordinary compliments deliciously interesting.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u187",
+      "text": "I'm not difficult to impress, but I am very easy to remember.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u188",
+      "text": "My favourite kind of confidence is being completely comfortable with my own temptation.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u189",
+      "text": "I could be someone's perfect angel, but I'd rather be unforgettable.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u190",
+      "text": "My imagination has never met a boundary it didn't want to question.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u191",
+      "text": "Don't worry, darling. I only look this mischievous when I'm enjoying myself.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u192",
+      "text": "I like a little sweetness with my sarcasm and a little scandal with my smile.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u193",
+      "text": "If you find me distracting, imagine how difficult it is being me.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u194",
+      "text": "I don't need to steal the spotlight. I just need to walk into the room.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u195",
+      "text": "My version of playing innocent should probably come with a disclaimer.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u196",
+      "text": "I enjoy making a harmless photograph feel like a very questionable thought.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u197",
+      "text": "Some people flirt with words. I prefer letting the imagination do the heavy lifting.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u198",
+      "text": "I don't have a naughty reputation. I have a misunderstood talent for mischief.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u199",
+      "text": "The best secrets are the ones that make you smile without explaining why.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u200",
+      "text": "I'm not everyone's bad idea. I'm the one they secretly hope becomes a good story.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u201",
+      "text": "I have the kind of smile that makes innocent conversations suspicious.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u202",
+      "text": "My imagination is expensive, unrestricted and rarely suitable for polite company.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u203",
+      "text": "I don't need to be undressed to make an impression. Sometimes confidence is much more distracting.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u204",
+      "text": "I enjoy being the reason someone suddenly develops a very creative imagination.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u205",
+      "text": "My favourite four-letter word is probably not the one you're thinking of.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u206",
+      "text": "I can look like a princess while having the sense of humour of a complete menace.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u207",
+      "text": "I'm not an angel, but I do make temptation look rather beautiful.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u208",
+      "text": "My flirting comes with a warning: I might actually enjoy making you nervous.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u209",
+      "text": "I like compliments that make me smile and conversations that make me bite my lip.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u210",
+      "text": "I don't need to show all my cards. Watching you guess is half the fun.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u211",
+      "text": "My innocent expression has fooled people with considerably better judgment than yours.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u212",
+      "text": "I like being a little scandalous without giving the whole story away.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u213",
+      "text": "If I were any more tempting, I'd need my own disclaimer.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u214",
+      "text": "I have a talent for turning a gentleman's imagination into an unsupervised playground.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u215",
+      "text": "Don't ask what I'm thinking unless you're prepared for an interesting answer.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u216",
+      "text": "My favourite kind of attention begins with curiosity and ends with a very obvious smile.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u217",
+      "text": "I look sweet, smell expensive and think things that would ruin a church picnic.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u218",
+      "text": "I don't always behave like a lady, but I always know how to make an entrance.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u219",
+      "text": "My smile is a polite introduction to a rather impolite imagination.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u220",
+      "text": "I'm the reason your imagination keeps asking questions your manners won't let you ask.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u221",
+      "text": "I like a little eye contact with a suspicious amount of chemistry.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u222",
+      "text": "I have never met a perfectly innocent thought that I couldn't make interesting.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u223",
+      "text": "My favourite outfit is confidence with a side of trouble.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u224",
+      "text": "I don't flirt with everybody. Some people simply inspire my mischievous side.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u225",
+      "text": "I could tell you to stop staring, but that would be terribly unfair to both of us.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u226",
+      "text": "I have a sweet voice, a sharp tongue and a mind that refuses to behave.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u227",
+      "text": "If temptation wore lipstick, I suspect we'd have a lot in common.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u228",
+      "text": "I'm not trying to be unforgettable. It just keeps happening.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u229",
+      "text": "My thoughts are private, but my smile is a terrible accomplice.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u230",
+      "text": "I like making a man wonder whether he should behave or take his chances with a compliment.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u231",
+      "text": "I don't need a scandal. A little imagination can make an ordinary evening interesting enough.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u232",
+      "text": "My good intentions usually disappear somewhere between a wink and a smile.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u233",
+      "text": "I like being admired, but being underestimated is considerably more entertaining.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u234",
+      "text": "A little black dress and a completely unfiltered imagination: dangerous combination.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u235",
+      "text": "I don't play innocent. I simply leave people to their own conclusions.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u236",
+      "text": "My sense of humour is sweet until somebody understands the double meaning.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u237",
+      "text": "I love a man who catches the hint without needing it explained twice.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u238",
+      "text": "If I seem distracted, it's probably because my imagination has started another adventure.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u239",
+      "text": "My favourite kind of trouble knows how to smile back.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u240",
+      "text": "I can make a perfectly ordinary sentence sound like a very naughty suggestion.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u241",
+      "text": "I'm not everyone's fantasy, but I do make a pretty convincing plot twist.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u242",
+      "text": "My eyes have a habit of saying things my lips haven't approved yet.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u243",
+      "text": "I like my compliments honest and my flirting just a little irresponsible.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u244",
+      "text": "My innocence is a work in progress, and progress has been rather slow.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u245",
+      "text": "Some people need an introduction. I prefer making an impression first.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u246",
+      "text": "I'm not a temptation you should underestimate just because I smile sweetly.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u247",
+      "text": "My imagination deserves a holiday, but it refuses to take a day off.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u248",
+      "text": "I love a little suspense. Especially when someone's trying very hard not to stare.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u249",
+      "text": "If you think I'm trouble, you should hear the conversations happening in my head.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u250",
+      "text": "I don't need to be the loudest woman in the room to become the most distracting.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u251",
+      "text": "My favourite kind of chemistry doesn't require a laboratory.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u252",
+      "text": "I have a weakness for charming smiles and dangerously clever conversations.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u253",
+      "text": "I can be very well behaved when absolutely nobody is testing my patience.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u254",
+      "text": "My pictures are innocent enough. Your interpretation is entirely your responsibility.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u255",
+      "text": "I don't mind being someone's favourite distraction, provided they have excellent taste.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u256",
+      "text": "I like a little mischief in the morning and a little mystery after dark.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u257",
+      "text": "My expression says nothing happened. My imagination knows better.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u258",
+      "text": "I'm not looking for trouble. Apparently, trouble has excellent taste in women.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u259",
+      "text": "I could write a book about behaving badly, but the illustrations would be much more interesting.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u260",
+      "text": "My favourite compliment is the one that makes me look away before I smile.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u261",
+      "text": "I have a habit of making good manners work overtime.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u262",
+      "text": "Don't confuse my quietness with innocence. Sometimes I'm simply enjoying the plot.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u263",
+      "text": "I like my confidence visible and my intentions deliciously ambiguous.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u264",
+      "text": "My imagination doesn't flirt gently. It arrives with confidence and a cheeky grin.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u265",
+      "text": "I'm a beautiful combination of good taste and questionable ideas.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u266",
+      "text": "Some people leave memories. I prefer leaving someone wondering what they missed.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u267",
+      "text": "I enjoy the kind of teasing that makes a simple conversation feel like a secret.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u268",
+      "text": "My favourite kind of evening involves great chemistry and absolutely no boring conversation.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u269",
+      "text": "I'm not trying to steal your attention. I'm testing how easily I can keep it.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u270",
+      "text": "I don't need to be mysterious when a raised eyebrow does all the work.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u271",
+      "text": "I look like someone's sweet dream and occasionally behave like their mischievous plot twist.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u272",
+      "text": "My imagination has a better nightlife than most people.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u273",
+      "text": "I like being the reason a perfectly confident man suddenly needs a moment.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u274",
+      "text": "A little teasing, a little confidence and a smile that refuses to explain itself.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u275",
+      "text": "I'm not difficult to read. You're just distracted by the pictures.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u276",
+      "text": "I believe in honesty, good perfume and thoughts that are best kept between the lines.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u277",
+      "text": "My favourite kind of flirting is when both people know exactly what they're implying.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u278",
+      "text": "I don't need to make a scene. Sometimes a smile is a whole announcement.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u279",
+      "text": "If my imagination had a filter, it would probably be permanently switched off.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u280",
+      "text": "I'm sweet enough to meet your mother and mischievous enough to make you nervous.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u281",
+      "text": "I like a man who can handle a woman with a wicked sense of humour.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u282",
+      "text": "I don't give away all my secrets. Some are much more entertaining as mysteries.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u283",
+      "text": "My favourite kind of confidence is knowing exactly how much attention I don't need to ask for.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u284",
+      "text": "I'm not here to be predictable. I'm here to make the story interesting.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u285",
+      "text": "My smile is free, but the imagination it inspires is entirely yours.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u286",
+      "text": "I enjoy a little flirtation with my coffee. It makes mornings less respectable.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u287",
+      "text": "If you catch me smiling at my phone, mind your business. It's probably an interesting conversation.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u288",
+      "text": "My favourite accessory is the ability to make people blush without saying much.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u289",
+      "text": "I can turn a harmless compliment into a full-blown exercise in imagination.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u290",
+      "text": "I don't have a filter problem. I have a very entertaining personality.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u291",
+      "text": "Sometimes the most dangerous thing a woman can wear is absolute confidence.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u292",
+      "text": "I like leaving a little mystery in every photograph and a little mischief in every caption.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u293",
+      "text": "I'm not everyone's type, but I'm definitely someone's favourite distraction.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u294",
+      "text": "I have a soft spot for bold compliments and men who can return the teasing.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u295",
+      "text": "My good-girl act deserves better lighting and a much larger audience.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u296",
+      "text": "I like making people smile first and wonder about me afterwards.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u297",
+      "text": "If curiosity is a weakness, I hope you never find a cure.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u298",
+      "text": "My imagination is a little wild, my smile is a little wicked and my standards are still very high.",
+      "mood": "flirty",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u299",
+      "text": "I don't need to tell you what I'm thinking. The fun is watching you imagine it.",
+      "mood": "bold",
+      "tags": [
+        "user-approved"
+      ]
+    },
+    {
+      "id": "u300",
+      "text": "I'm not the kind of woman you forget after one photograph. I'm the thought that comes back later.",
+      "mood": "dreamy",
+      "tags": [
+        "user-approved"
+      ]
+    }
+  ]
+}

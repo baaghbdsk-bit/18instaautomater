@@ -32,6 +32,8 @@ from config import (
     FONTS_DIR,
     MARGIN_X,
     OUTPUT_DIR,
+    REEL_DURATION,
+    REEL_MOTION,
     SCALE_MODE,
     TEXT_OUTLINE,
     TMP_DIR,
@@ -406,6 +408,62 @@ def _drawtext_filter(quote: dict, width: int, height: int,
             f":line_spacing=8"
             f":x=(w-text_w)/2:y=(h-text_h)/2"
             f":enable='between(t,0,{duration})'")
+
+
+# ---------------------------------------------------------------------------
+# reel from an already-composed quote image
+# ---------------------------------------------------------------------------
+def still_video(image_path, output_path, duration: float | None = None,
+                motion: str | None = None, fps: int = VIDEO_FPS,
+                silent_audio: bool = True) -> dict:
+    """Turn a composed quote image into an Instagram Reel MP4.
+
+    The quote is already burned into the JPEG by compose_image.py, so no ASS
+    text is added here. A silent AAC track is included so validate_video()
+    passes; the real trending catalog track is attached at publish time via
+    instagrapi's clip_upload_with_music().
+    """
+    from pathlib import Path
+
+    src = Path(image_path).resolve()
+    if not src.exists():
+        raise FileNotFoundError(f"Image not found: {src}")
+    out = Path(output_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    duration = round(min(max(float(duration or REEL_DURATION), 6.0), 60.0), 1)
+    motion = motion or REEL_MOTION
+    frames = max(1, int(duration * fps))
+    mo = motion_expressions(motion, frames)
+    zoompan = (f"zoompan=z='{mo['z']}':x='{mo['x']}':y='{mo['y']}'"
+               f":d=1:s={VIDEO_WIDTH}x{VIDEO_HEIGHT}:fps={fps}")
+    fit = (f"scale={VIDEO_WIDTH}:{VIDEO_HEIGHT}:"
+           f"force_original_aspect_ratio=increase,"
+           f"crop={VIDEO_WIDTH}:{VIDEO_HEIGHT},setsar=1")
+    grade = "eq=contrast=1.04:saturation=0.96:brightness=-0.02,format=yuv420p"
+    vf = f"{fit},{zoompan},{grade}"
+
+    cmd = [FFMPEG_BIN, "-y", "-hide_banner", "-loglevel", "error",
+           "-loop", "1", "-framerate", str(fps), "-i", str(src)]
+    if silent_audio:
+        cmd += ["-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo"]
+    cmd += ["-vf", vf, "-t", str(duration), "-r", str(fps),
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
+            "-threads", "2",
+            "-pix_fmt", "yuv420p", "-color_range", "tv",
+            "-movflags", "+faststart"]
+    if silent_audio:
+        cmd += ["-c:a", "aac", "-b:a", "128k", "-ar", "48000", "-shortest"]
+    else:
+        cmd += ["-an"]
+    cmd += [str(out)]
+
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    if proc.returncode != 0:
+        raise RuntimeError(f"ffmpeg still_video failed ({proc.returncode}): "
+                           f"{(proc.stderr or '')[-2000:]}")
+    return {"path": str(out), "duration": duration, "motion": motion,
+            "size_bytes": out.stat().st_size}
 
 
 # ---------------------------------------------------------------------------
