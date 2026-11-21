@@ -1,17 +1,17 @@
 """
-run_all_accounts.py — run one full pipeline post for EACH configured account.
+run_all_accounts.py — one piece of content per run, published to every account.
 
-Used by GitHub Actions so a single scheduled run publishes once per account
-(e.g. @xene_hotty and @panda_fcuk) while reusing the shared quote bank,
-character identity, images and provider adapters.
+GitHub Actions calls this script. The first configured account runs the full
+pipeline (quote -> image -> Reel -> caption -> publish). Every other account
+then calls ``pipeline.py --repost <post_id>`` to publish that SAME video,
+image, caption and SLOWBURN track to its own page.
 
-Each sub-run is independent: a failure on one account never blocks the other.
-The pipeline's own guards (daily cap, duplicate-caption, quote_usage claim)
-still apply to every sub-run.
+Each account keeps its own session, daily cap and duplicate-caption guard. A
+failure on one account never blocks the others.
 
 Usage:
     python run_all_accounts.py                     # all configured accounts
-    python run_all_accounts.py --dry-run           # build only, no publishing
+    python run_all_accounts.py --dry-run           # build only, publish nothing
     python run_all_accounts.py --only account_1    # single account
 """
 
@@ -20,11 +20,20 @@ import os
 import subprocess
 import sys
 
+import db
 from config import ACCOUNTS
 
 
+def _latest_published(account_name: str, after_id: int) -> int | None:
+    """Find the post id created by the full pipeline run we just finished."""
+    rows = db.recent_posts(limit=10, account=account_name)
+    ids = [int(r["id"]) for r in rows
+           if int(r["id"]) > after_id and r.get("status") == "published"]
+    return max(ids) if ids else None
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run the pipeline per account")
+    parser = argparse.ArgumentParser(description="Build once, post to all accounts")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--strict", action="store_true", default=True)
     parser.add_argument("--slot", default="cron")
@@ -41,25 +50,46 @@ def main() -> int:
         print("[!] No configured accounts with credentials — nothing to run.")
         return 1
 
+    baseline = max((int(r["id"]) for r in db.recent_posts(limit=200)), default=0)
     failures = 0
-    for acc in targets:
+    source_id: int | None = None
+
+    for idx, acc in enumerate(targets):
         print(f"\n{'=' * 64}")
         print(f"  ACCOUNT {acc['name']} ({acc['username']})")
         print('=' * 64)
-        # The pipeline reads ACCOUNTS from config; pin it to this one account
-        # so each run uses a single, unambiguous session and cadence bucket.
         env = os.environ.copy()
         env["IG_ACTIVE_ACCOUNT"] = acc["name"]
-        cmd = [sys.executable, "pipeline.py", "--strict", "--slot",
-               f"{args.slot}-{acc['name']}", "--mode", args.mode]
-        if args.dry_run:
-            cmd.append("--dry-run")
-        rc = subprocess.run(cmd, env=env).returncode
+
+        if idx == 0 or args.dry_run:
+            # First account (and every account in dry-run) builds from scratch.
+            cmd = [sys.executable, "pipeline.py", "--strict", "--slot",
+                   f"{args.slot}-{acc['name']}", "--mode", args.mode]
+            if args.dry_run:
+                cmd.append("--dry-run")
+            rc = subprocess.run(cmd, env=env).returncode
+            if rc == 0 and idx == 0 and not args.dry_run:
+                source_id = _latest_published(acc["name"], baseline)
+                if source_id is None:
+                    print("[!] Could not identify the post just published — "
+                          "other accounts will build their own content.")
+        elif source_id is not None:
+            # Same content, same music, different page.
+            cmd = [sys.executable, "pipeline.py", "--strict", "--slot",
+                   f"{args.slot}-{acc['name']}", "--mode", args.mode,
+                   "--repost", str(source_id)]
+            rc = subprocess.run(cmd, env=env).returncode
+        else:
+            print(f"[!] {acc['name']}: no source post available — skipping.")
+            failures += 1
+            continue
+
         if rc != 0:
             failures += 1
             print(f"[!] {acc['name']} failed (exit {rc}) — continuing.")
         else:
-            print(f"[+] {acc['name']} completed.")
+            role = "original" if idx == 0 or args.dry_run else "same content"
+            print(f"[+] {acc['name']} completed ({role}).")
 
     print(f"\nDone. {len(targets) - failures}/{len(targets)} account(s) succeeded.")
     return 1 if failures else 0

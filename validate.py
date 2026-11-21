@@ -71,7 +71,8 @@ def faststart(path) -> bool:
 
 def validate_video(path, width: int = VIDEO_WIDTH, height: int = VIDEO_HEIGHT,
                    min_seconds: float = MIN_SECONDS,
-                   max_seconds: float = MAX_SECONDS) -> Tuple[bool, list, dict]:
+                   max_seconds: float = MAX_SECONDS,
+                   require_audio: bool = True) -> Tuple[bool, list, dict]:
     """Returns (ok, reasons, info). Reasons are safe to print in public logs."""
     reasons = []
     info: dict = {}
@@ -96,7 +97,10 @@ def validate_video(path, width: int = VIDEO_WIDTH, height: int = VIDEO_HEIGHT,
     astreams = [s for s in streams if s.get("codec_type") == "audio"]
     if not vstreams:
         reasons.append("no video stream")
-    if not astreams:
+    if not astreams and require_audio:
+        # A Reel with a catalog track attached at publish time must NOT have
+        # a silent local audio stream, otherwise Instagram uses that instead
+        # of the licensed catalog audio and the Reel is effectively silent.
         reasons.append("no audio stream")
 
     if vstreams:

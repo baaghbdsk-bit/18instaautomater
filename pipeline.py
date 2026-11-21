@@ -70,6 +70,7 @@ from config import (
     RANDOM_SEED,
     TMP_DIR,
 )
+from music_match import track_from_metadata
 from post_instagram import (
     find_duplicate,
     login_account,
@@ -483,8 +484,13 @@ def run_image(args) -> int:
         if args.mode == "reel":
             reel_path = OUTPUT_DIR / (
                 f"reel_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4")
-            reel = still_video(final_path, reel_path)
-            vok, vreasons, vinfo2 = validate_video(reel["path"])
+            # With a catalog track attached at publish time the MP4 must NOT
+            # contain a silent local audio stream: Instagram would play that
+            # instead of the licensed track, leaving the Reel effectively mute.
+            reel = still_video(final_path, reel_path,
+                               silent_audio=not MUSIC_ENABLED)
+            vok, vreasons, vinfo2 = validate_video(
+                reel["path"], require_audio=not MUSIC_ENABLED)
             if not vok:
                 raise RuntimeError("reel validation failed: " +
                                    ", ".join(vreasons))
@@ -596,6 +602,139 @@ def run_image(args) -> int:
             logout_all(clients)
         report(outcome["status"], post_id, outcome["theme"], outcome["line"],
                outcome["info"], notes)
+        cleanup_temp()
+        db.checkpoint()
+
+
+def run_repost(args) -> int:
+    """Publish one already-built post's exact media to a second account.
+
+    The owner wants ONE piece of content per run, posted to both pages. The
+    first account runs the full pipeline; every other account calls this with
+    that post's id, reusing the same image, video, caption and SLOWBURN track.
+    """
+    source_id = int(args.repost)
+    run_id = db.start_run(args.slot)
+    clients: dict = {}
+    new_id = None
+    notes: list = []
+    outcome = {"status": "failed", "theme": "image-post", "line": None,
+               "info": None}
+
+    def finish(status_: str, error: str | None = None) -> None:
+        db.finish_run(run_id, status_, post_id=new_id or source_id, error=error)
+
+    try:
+        source = db.get_post(source_id)
+        if not source:
+            raise RuntimeError(f"repost: post {source_id} not found")
+        if source.get("status") != "published":
+            raise RuntimeError(f"repost: post {source_id} is not published")
+
+        media = source.get("video_path") or source.get("final_image_path")
+        if not media or not Path(media).exists():
+            raise RuntimeError(f"repost: media missing at {media}")
+        thumb = source.get("final_image_path")
+        if not thumb or not Path(thumb).exists():
+            thumb = None
+
+        usable = [a for a in ACCOUNTS if a["username"] and a["password"]
+                  and (not IG_ACTIVE_ACCOUNT or a["name"] == IG_ACTIVE_ACCOUNT)]
+        if not usable:
+            raise RuntimeError("repost: no target account configured")
+        account = usable[0]
+        if db.count_published_today(account["name"]) >= DAILY_CAP_PER_ACCOUNT:
+            print(f"[=] {account['name']}: daily cap reached — repost skipped")
+            outcome["status"] = "skipped"
+            finish("skipped", "daily-cap")
+            return 0
+
+        clients[account["name"]] = login_account(account)
+        cl = clients[account["name"]]
+        caption = source.get("caption_text") or ""
+        dup = find_duplicate(cl, account["username"], caption, lookback=12)
+        if dup:
+            print(f"[=] {account['name']}: caption already live — repost skipped")
+            db.update_post(source_id, error=f"repost duplicate on "
+                                            f"{account['name']} (pk={dup})")
+            outcome["status"] = "skipped"
+            finish("skipped", "duplicate-caption")
+            return 0
+
+        meta = {}
+        try:
+            meta = json.loads(source.get("prompt_metadata") or "{}")
+        except (ValueError, TypeError):
+            pass
+        track = (track_from_metadata(cl, meta.get("music"))
+                 if MUSIC_ENABLED else None)
+        if meta.get("music"):
+            label = f"{meta['music'].get('title')} — {meta['music'].get('artist')}"
+            print(f"[*] Music : {label} (same track as original)")
+
+        fields = {
+            "account": account["name"], "theme": source.get("theme") or "image-post",
+            "title": source.get("title"), "engine": source.get("engine"),
+            "caption_text": caption, "quote_id": source.get("quote_id"),
+            "quote_text": source.get("quote_text"),
+            "prompt_text": source.get("prompt_text"),
+            "prompt_metadata": source.get("prompt_metadata"),
+            "provider": source.get("provider"), "model": source.get("model"),
+            "seed": source.get("seed"), "image_path": source.get("image_path"),
+            "image_source": source.get("image_source"),
+            "final_image_path": source.get("final_image_path"),
+            "video_path": source.get("video_path"),
+            "generation_status": source.get("generation_status"),
+            "generation_path": source.get("generation_path"),
+            "composition_status": source.get("composition_status"),
+            "output_kind": source.get("output_kind"),
+            "duration_sec": source.get("duration_sec"),
+            "status": "publishing",
+        }
+        new_id = db.insert_post(**fields)
+        outcome["line"] = source.get("quote_text")
+        outcome["info"] = {"path": media, "image": thumb}
+        print(f"[*] Repost to {account['name']} ({account['username']}): "
+              f"post #{source_id} -> #{new_id}")
+
+        if (source.get("output_kind") == "reel") or str(media).endswith(".mp4"):
+            res = upload_reel_with_music(cl, account["username"], media,
+                                         caption, track=track, thumbnail=thumb)
+        else:
+            res = upload_photo_post(cl, account["username"], media,
+                                    caption, track=track)
+        if not res["ok"]:
+            db.update_post(new_id, status="failed", error=res["error"],
+                           error_stage="publish")
+            raise RuntimeError(f"repost upload failed: {res['error']}")
+
+        permalink = (f"https://www.instagram.com/p/{res['code']}/"
+                     if res.get("code") else None)
+        db.update_post(new_id, status="published", ig_id=res.get("pk"),
+                       permalink=permalink,
+                       published_at=datetime.now().isoformat(timespec="seconds"))
+        print(f"[+] Published: {permalink or res.get('pk')}")
+        outcome["status"] = "published"
+        finish("published")
+        return 0
+    except Exception as e:  # noqa: BLE001
+        msg = str(e)[:800]
+        if new_id is not None:
+            try:
+                db.update_post(new_id, status="failed", error=msg,
+                               error_stage="repost")
+            except Exception:  # noqa: BLE001
+                pass
+        notify.error(msg)
+        notes.append(msg)
+        outcome["status"] = "failed"
+        finish("failed", msg)
+        return 1
+    finally:
+        if clients:
+            logout_all(clients)
+        report(outcome["status"], new_id or source_id, outcome["theme"],
+               outcome["line"], outcome["info"], notes)
         cleanup_temp()
         db.checkpoint()
 
@@ -725,6 +864,9 @@ def run(argv=None) -> int:
                         help="Force text placement variant")
     parser.add_argument("--slot", default="cron",
                         help="Run label stored in the runs table")
+    parser.add_argument("--repost", type=int, default=None,
+                        help="Publish an existing post's exact media to this "
+                             "run's account (one content, both pages)")
     parser.add_argument("--force", action="store_true",
                         help="Publish even if cadence guards would skip")
     args = parser.parse_args(argv)
@@ -732,6 +874,8 @@ def run(argv=None) -> int:
     if RANDOM_SEED:
         random.seed(int(RANDOM_SEED))
 
+    if args.repost:
+        return run_repost(args)
     if args.mode == "legacy-reel":
         return run_reel(args)
     return run_image(args)

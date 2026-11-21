@@ -203,16 +203,19 @@ about explicit quote text at the top of this README.
 
 ## Content quality controls
 
-- **Music matches the scene.** Each curated variation has a `mood` (e.g.
-  `playful and alluring`, `dreamy and free`). `music_match.py` maps that mood to
-  Instagram catalog search queries, searches the live catalog and ranks results
-  by title/artist match, with global trending only as a fallback. Used track IDs
-  are recorded via `db.mark_asset("music", ...)` so they rotate.
-- **Styling is alluring but non-explicit.** Scene outfits in
-  `character/variations.py` use thin-strap satin, slip dresses, high slits,
-  swimwear and open layers. Nudity and explicit sexual activity are excluded by
-  the fixed profile and negative prompt — this keeps the accounts within
-  Instagram's rules and is not negotiable here.
+- **Music identity: SLOWBURN first, ORGAVSM as rotation.** `music_match.py`
+  holds verified catalog track IDs for both artists, ordered per scene mood.
+  There is no generic keyword search and no trending fallback: a post goes out
+  without music rather than with an off-theme track. The MP4 is rendered with
+  **no local audio stream**, so Instagram plays the attached catalog track
+  instead of a silent one.
+- **One piece of content, both pages.** `run_all_accounts.py` builds once on the
+  first account, then `pipeline.py --repost <post_id>` publishes the same video,
+  caption and track to the second account (each with its own cap and duplicate
+  guard).
+- **Styling.** Scene outfits in `character/variations.py` use thin-strap satin,
+  slip dresses, high slits, swimwear and open layers. Nudity and explicit
+  sexual activity are excluded by the fixed profile and negative prompt.
 - **Handle placement.** The `@handle` is rendered bottom-centre on a dark pill
   in both the composed still and the Reel subtitles, so it no longer covers the
   subject's face.

@@ -184,8 +184,8 @@ def test_reel_mode_renders_video_and_records_it(isolated, monkeypatch):
 
     monkeypatch.setattr(pipeline, "still_video", fake_still_video)
     monkeypatch.setattr(pipeline, "validate_video",
-                        lambda path: (True, [], {"duration": 12.0,
-                                                 "bytes": 100000}))
+                        lambda path, **kwargs: (True, [], {"duration": 12.0,
+                                                           "bytes": 100000}))
 
     rc = pipeline.run(["--dry-run", "--strict"])
     assert rc == 0

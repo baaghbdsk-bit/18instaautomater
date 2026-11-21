@@ -33,7 +33,7 @@ from config import (
     MUSIC_TRENDING_PRODUCT,
     SESSIONS_DIR,
 )
-from music_match import mood_queries, score_track, track_key
+from music_match import curated_for_mood, find_curated_track, track_key
 from net import with_retry
 
 SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
@@ -495,44 +495,17 @@ def find_trending_tracks(cl, source: str | None = None, limit: int | None = None
 
 def pick_music_track(cl, used_keys: list | None = None,
                      mood: str | None = None):
-    """Pick a catalog track matching the scene mood (falls back to trending)."""
-    import random
-
-    queries = mood_queries(mood)
-    source = "trending"
-    tracks: list = []
-    for query in queries:
-        try:
-            found = list(cl.search_music(query) or [])
-        except Exception as e:  # noqa: BLE001 - catalog search is optional
-            print(f"[music] search '{query}' failed: "
-                  f"{type(e).__name__}: {str(e)[:120]}")
-            continue
-        if found:
-            tracks = found
-            source = f"search:{query}"
-            break
-    if not tracks:
-        tracks = find_trending_tracks(cl)
-    if not tracks:
-        return None, None
-
+    """Pick a SLOWBURN catalog track for the mood. No generic fallback."""
     used = set(used_keys or [])
-    unused = [t for t in tracks if track_key(t) not in used]
-    if unused:
-        tracks = unused
-
-    # Highest mood match first; a small random tie-break keeps rotation lively.
-    ranked = sorted(
-        tracks,
-        key=lambda t: score_track(t, queries) + random.random() * 0.4,
-        reverse=True,
-    )
-    track = ranked[0]
-    print(f"[music] {source} mood={mood!r} -> "
-          f"{getattr(track, 'title', '?')} — "
-          f"{getattr(track, 'display_artist', '?')}")
-    return track, track_key(track)
+    for item in curated_for_mood(mood):
+        if item["track_id"] in used:
+            continue
+        track = find_curated_track(cl, item)
+        if track is not None:
+            print(f"[music] SLOWBURN '{item['title']}' for mood={mood!r}")
+            return track, track_key(track)
+    print("[music] no SLOWBURN track available — posting without music")
+    return None, None
 
 
 def session_status(account) -> dict:

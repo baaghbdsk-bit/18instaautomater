@@ -1,4 +1,4 @@
-"""Mood-matched music selection and alluring-but-safe scene styling."""
+"""Music identity: SLOWBURN only, no generic trending fallback."""
 
 from types import SimpleNamespace
 from unittest.mock import MagicMock
@@ -8,47 +8,86 @@ import post_instagram
 from character.variations import QUALITY_CONSTRAINTS, VARIATIONS
 
 
-def test_mood_queries_maps_scene_mood():
-    queries = music_match.mood_queries("playful and alluring")
-    assert "playful pop" in queries
-    assert "slow r&b" in queries
-    assert "sensual" in queries
+def test_every_curated_track_is_approved():
+    assert len(music_match.SLOWBURN_KEYS) == 10
+    assert len(music_match.ORGAVSM_KEYS) == 5
+    for item in music_match.CURATED_TRACKS.values():
+        assert item["artist"] in music_match.APPROVED_ARTISTS
+        assert item["track_id"].isdigit()
 
 
-def test_mood_queries_empty_for_unknown_mood():
-    assert music_match.mood_queries(None) == []
-    assert music_match.mood_queries("something unrecognised") == []
+def test_mood_maps_only_to_approved_artists_and_prefers_slowburn():
+    for mood in ("playful and alluring", "dreamy and free", "bold and electric",
+                 "high fashion and commanding", ""):
+        items = music_match.curated_for_mood(mood)
+        assert items
+        assert all(i["artist"] in music_match.APPROVED_ARTISTS for i in items)
+        assert len({i["track_id"] for i in items}) == len(items)
+        # SLOWBURN always comes before ORGAVSM in the rotation.
+        first_orgavsm = next(
+            (n for n, i in enumerate(items)
+             if i["artist"] != "SLOWBURN"), len(items))
+        assert all(i["artist"] == "SLOWBURN"
+                   for i in items[:first_orgavsm])
 
 
-def test_score_track_prefers_title_matching_mood():
-    hit = SimpleNamespace(title="Slow Sensual Nights", display_artist="Artist")
-    miss = SimpleNamespace(title="Random Pop Song", display_artist="Other")
-    assert music_match.score_track(hit, ["slow r&b", "sensual"]) > \
-        music_match.score_track(miss, ["slow r&b", "sensual"])
-    assert music_match.score_track(hit, []) == 0.0
-
-
-def test_pick_music_track_uses_search_for_mood(monkeypatch):
-    # With a mood, the picker must search the catalog rather than take a
-    # random item from the global trending list.
-    low = SimpleNamespace(id="1", title="Random Pop Song", display_artist="A")
-    high = SimpleNamespace(id="2", title="Slow Sensual Nights", display_artist="B")
+def test_find_curated_track_matches_exact_id():
+    wanted = music_match.CURATED_TRACKS["crave_you"]
+    right = SimpleNamespace(id=wanted["track_id"], title="Crave You")
+    wrong = SimpleNamespace(id="1", title="Crave You")
     client = MagicMock()
-    client.search_music.return_value = [low, high]
+    client.search_music.return_value = [wrong, right]
+    assert music_match.find_curated_track(client, wanted) is right
+
+
+def test_pick_music_track_never_uses_trending(monkeypatch):
+    wanted = music_match.CURATED_TRACKS["crave_you"]
+    fake_track = SimpleNamespace(id=wanted["track_id"], title="Crave You",
+                                 display_artist="SLOWBURN")
+    client = MagicMock()
+    client.search_music.return_value = [fake_track]
 
     track, key = post_instagram.pick_music_track(client, mood="playful and alluring")
 
-    client.search_music.assert_called()
     client.music_top_trends.assert_not_called()
-    assert key == "2"
-    assert track.title == "Slow Sensual Nights"
+    assert key == wanted["track_id"]
+    assert track.title == "Crave You"
 
 
-def test_pick_music_track_falls_back_to_trending(monkeypatch):
+def test_pick_music_track_skips_used_tracks():
+    first = music_match.CURATED_TRACKS["tease_me"]
+    second = music_match.CURATED_TRACKS["crave_you"]
+    a = SimpleNamespace(id=first["track_id"], title="Tease Me",
+                        display_artist="SLOWBURN")
+    b = SimpleNamespace(id=second["track_id"], title="Crave You",
+                        display_artist="SLOWBURN")
+    client = MagicMock()
+    client.search_music.return_value = [a, b]
+
+    track, key = post_instagram.pick_music_track(
+        client, used_keys=[first["track_id"]], mood="flirty")
+    assert key == second["track_id"]
+
+
+def test_pick_music_track_fails_soft_without_catalog():
     client = MagicMock()
     client.search_music.return_value = []
-    client.music_top_trends.return_value = {"items": []}
-    assert post_instagram.pick_music_track(client, mood="alluring") == (None, None)
+    assert post_instagram.pick_music_track(client, mood="flirty") == (None, None)
+
+
+def test_track_from_metadata_uses_right_artist_search():
+    client = MagicMock()
+    client.search_music.return_value = []
+    music_match.track_from_metadata(
+        client, {"track_id": "876032214956457", "title": "Crave You",
+                 "artist": "SLOWBURN"})
+    client.search_music.assert_called_with("slowburn")
+
+    client.search_music.reset_mock()
+    music_match.track_from_metadata(
+        client, {"track_id": "3715502165250716", "title": "Naughty",
+                 "artist": "ORGAVSM"})
+    client.search_music.assert_called_with("orgavsm")
 
 
 def test_all_variations_stay_non_explicit():
