@@ -1,7 +1,7 @@
 name: dispatch post (temporary)
 
 # TEMPORARY: one-off verification run. Delete when done.
-# retry after thumbnail fallback fix (2)
+# retry after thumbnail fallback fix (3 - diagnostics)
 on:
   push:
     paths:
