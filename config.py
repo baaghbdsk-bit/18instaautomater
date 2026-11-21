@@ -17,6 +17,12 @@ load_dotenv()
 # When empty, the pipeline rotates across every configured account as before.
 IG_ACTIVE_ACCOUNT = os.getenv("IG_ACTIVE_ACCOUNT", "")
 
+# Optional outbound proxy for Instagram (e.g. a residential proxy). A datacenter
+# IP is the main reason a cloud login gets challenged; routing through a stable
+# residential IP makes unattended runs far more reliable.
+#   IG_PROXY=http://user:pass@host:port
+IG_PROXY = os.getenv("IG_PROXY", "")
+
 BASE_DIR = Path(__file__).resolve().parent
 
 # ---------------------------------------------------------------------------

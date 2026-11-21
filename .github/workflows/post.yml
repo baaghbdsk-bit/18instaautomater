@@ -69,8 +69,20 @@ jobs:
         uses: actions/cache@v4
         with:
           path: sessions
-          key: ig-sessions-v2-${{ github.run_id }}
-          restore-keys: ig-sessions-v2-
+          key: ig-sessions-v3-${{ github.run_id }}
+          restore-keys: ig-sessions-v3-
+
+      # A datacenter IP cannot clear an Instagram challenge, so seed the
+      # session from an encrypted secret exported on the machine that logged
+      # in. A session already present in the Actions cache wins, so a session
+      # refreshed by a previous run is never downgraded.
+      - name: Seed Instagram sessions from secrets
+        env:
+          IG_USERNAME_1: ${{ secrets.IG_USERNAME_1 }}
+          IG_USERNAME_2: ${{ secrets.IG_USERNAME_2 }}
+          IG_SESSION_1: ${{ secrets.IG_SESSION_1 }}
+          IG_SESSION_2: ${{ secrets.IG_SESSION_2 }}
+        run: python bootstrap_sessions.py
 
       - name: Start Perchance image API (xvfb — it launches headful Chrome)
         run: |
@@ -109,6 +121,7 @@ jobs:
           IG_USERNAME_2: ${{ secrets.IG_USERNAME_2 }}
           IG_PASSWORD_2: ${{ secrets.IG_PASSWORD_2 }}
           IG_2FA_SECRET_2: ${{ secrets.IG_2FA_SECRET_2 }}
+          IG_PROXY: ${{ secrets.IG_PROXY }}
           IG_HANDLE_1: ${{ vars.IG_HANDLE_1 || '@xene_hotty' }}
           IG_HANDLE_2: ${{ vars.IG_HANDLE_2 || '@panda_fcuk' }}
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}

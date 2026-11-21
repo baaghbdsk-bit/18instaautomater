@@ -168,6 +168,33 @@ python run_all_accounts.py --only account_2   # only @panda_fcuk
   `CHARACTER_ID=meera-v1`, `QUOTE_LOW_WATERMARK=20`.
 - Settings → Actions → General → Workflow permissions: **Read and write**.
 
+### Why cloud runs were failing (and the fix)
+
+Every scheduled run up to #43 failed with:
+
+```
+login failed for every account — account_1: Challenge code input is unavailable
+```
+
+A GitHub runner logs in from a datacenter IP, so Instagram raises a challenge
+that cannot be answered unattended. Retrying the password never clears it.
+
+The fix is to give CI a session that was already authenticated locally:
+
+```powershell
+python export_sessions.py        # writes %USERPROFILE%\ig-session-secrets.txt
+```
+
+Open that file and add each line as a GitHub **Secret** (`IG_SESSION_1`,
+`IG_SESSION_2`). The workflow's `bootstrap_sessions.py` step writes them into
+`sessions/` only when the Actions cache has no session, so a session refreshed
+by an earlier run is never downgraded. The file contains account-takeover
+material: add the secrets, then delete it.
+
+If Instagram still challenges the datacenter IP, add an `IG_PROXY` Secret
+(residential proxy, `http://user:pass@host:port`); it is applied to every
+instagrapi client.
+
 Automation caveats: the first CI login from a datacenter IP may require an
 Instagram challenge (complete it in-app once, clear the `ig-sessions-v2-*` cache,
 re-run). The Perchance wrapper clones a third-party repo at runtime and is the

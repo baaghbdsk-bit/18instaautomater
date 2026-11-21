@@ -26,6 +26,7 @@ from instagrapi.exceptions import (
 )
 
 from config import (
+    IG_PROXY,
     MUSIC_LIMIT,
     MUSIC_SEARCH_QUERY,
     MUSIC_SOURCE,
@@ -66,14 +67,27 @@ def login_account(account: dict) -> Client:
     def attempt() -> Client:
         cl = Client()
         cl.delay_range = [1, 3]          # human-like pacing between API calls
+        if IG_PROXY:
+            cl.set_proxy(IG_PROXY)       # stable egress IP for cloud runs
         if sess_file.exists():
             try:
                 cl.load_settings(sess_file)
                 cl.login(username, password)
                 print(f"[+] {account['name']}: restored session ({username})")
+                # Refresh the cache so the next run starts from a newer session
+                # instead of replaying this one until it expires.
+                try:
+                    cl.dump_settings(sess_file)
+                except Exception:        # noqa: BLE001 - cache is best-effort
+                    pass
                 return cl
-            except (ChallengeRequired, TwoFactorRequired):
+            except TwoFactorRequired:
                 raise                     # handled below, not a network issue
+            except ChallengeRequired as e:
+                # A cached session can be challenged too. A fresh login is the
+                # only remaining chance, so fall through instead of giving up.
+                print(f"[-] {account['name']}: cached session challenged, "
+                      f"trying a fresh login ({e})")
             except Exception as e:        # noqa: BLE001 — stale session
                 print(f"[-] {account['name']}: session invalid, re-logging ({e})")
 
