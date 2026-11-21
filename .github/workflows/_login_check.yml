@@ -1,0 +1,72 @@
+name: login check
+
+# TEMPORARY diagnostic: proves the seeded sessions authenticate from a
+# GitHub runner (datacenter IP). Publishes nothing. Writes a report file
+# because run logs need auth to read.
+on:
+  push:
+    paths:
+      - .github/workflows/_login_check.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Seed sessions from secrets
+        env:
+          IG_USERNAME_1: ${{ secrets.IG_USERNAME_1 }}
+          IG_USERNAME_2: ${{ secrets.IG_USERNAME_2 }}
+          IG_SESSION_1: ${{ secrets.IG_SESSION_1 }}
+          IG_SESSION_2: ${{ secrets.IG_SESSION_2 }}
+        run: python bootstrap_sessions.py
+
+      - name: Try an authenticated call per account
+        env:
+          IG_USERNAME_1: ${{ secrets.IG_USERNAME_1 }}
+          IG_PASSWORD_1: ${{ secrets.IG_PASSWORD_1 }}
+          IG_USERNAME_2: ${{ secrets.IG_USERNAME_2 }}
+          IG_PASSWORD_2: ${{ secrets.IG_PASSWORD_2 }}
+        run: |
+          mkdir -p data
+          python - > data/login-check.txt 2>&1 <<'PY' || true
+          import config
+          from post_instagram import login_account, preflight
+
+          print("runner_egress_check")
+          for acc in config.ACCOUNTS:
+              label = f"{acc['name']} ({acc.get('username') or 'no-username'})"
+              if not (acc.get("username") and acc.get("password")):
+                  print(f"{label}: SKIP no credentials")
+                  continue
+              try:
+                  cl = login_account(acc)
+                  who = preflight(cl)
+                  print(f"{label}: OK authenticated as {who}")
+              except Exception as e:
+                  print(f"{label}: FAIL {type(e).__name__}: {str(e)[:180]}")
+          PY
+          cat data/login-check.txt
+
+      - name: Commit report
+        if: always()
+        run: |
+          git config user.name "insta-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f data/login-check.txt
+          git commit -m "chore: login check report [skip ci]" || true
+          for i in 1 2 3; do git push && break || git pull --rebase --autostash; done
