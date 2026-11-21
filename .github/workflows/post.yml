@@ -109,7 +109,8 @@ jobs:
           IG_USERNAME_2: ${{ secrets.IG_USERNAME_2 }}
           IG_PASSWORD_2: ${{ secrets.IG_PASSWORD_2 }}
           IG_2FA_SECRET_2: ${{ secrets.IG_2FA_SECRET_2 }}
-          IG_HANDLE_1: ${{ vars.IG_HANDLE_1 }}
+          IG_HANDLE_1: ${{ vars.IG_HANDLE_1 || '@xene_hotty' }}
+          IG_HANDLE_2: ${{ vars.IG_HANDLE_2 || '@panda_fcuk' }}
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
@@ -122,11 +123,15 @@ jobs:
           PERCHANCE_STYLE: ${{ vars.PERCHANCE_STYLE || 'Cinematic' }}
           QUOTE_LOW_WATERMARK: ${{ vars.QUOTE_LOW_WATERMARK || '20' }}
           CHARACTER_ID: ${{ vars.CHARACTER_ID || 'meera-v1' }}
+          MUSIC_ENABLED: ${{ vars.MUSIC_ENABLED || '1' }}
+          MUSIC_SOURCE: ${{ vars.MUSIC_SOURCE || 'trending' }}
+          MUSIC_SEARCH_QUERY: ${{ vars.MUSIC_SEARCH_QUERY || 'trending' }}
+          REEL_DURATION: ${{ vars.REEL_DURATION || '12' }}
           ALLOW_PLACEHOLDER: '0'
         run: |
           EXTRA_ARGS=""
           if [ -n "${{ inputs.theme }}" ]; then EXTRA_ARGS="$EXTRA_ARGS --theme ${{ inputs.theme }}"; fi
-          python pipeline.py --strict --slot "${{ inputs.slot || 'cron' }}" $EXTRA_ARGS
+          python run_all_accounts.py --strict --slot "${{ inputs.slot || 'cron' }}" --mode reel
 
       - name: Upload run artifacts
         if: always()

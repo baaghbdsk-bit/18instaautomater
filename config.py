@@ -13,6 +13,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Optional: pin this process to a single account (set by run_all_accounts.py).
+# When empty, the pipeline rotates across every configured account as before.
+IG_ACTIVE_ACCOUNT = os.getenv("IG_ACTIVE_ACCOUNT", "")
+
 BASE_DIR = Path(__file__).resolve().parent
 
 # ---------------------------------------------------------------------------
@@ -47,10 +51,10 @@ ACCOUNTS = [
     },
     {
         "name": "account_2",
-        "username": os.getenv("IG_USERNAME_2", ""),
+        "username": os.getenv("IG_USERNAME_2", "panda_fcuk"),
         "password": os.getenv("IG_PASSWORD_2", ""),
         "two_factor_secret": os.getenv("IG_2FA_SECRET_2", ""),
-        "handle": os.getenv("IG_HANDLE_2") or "",
+        "handle": os.getenv("IG_HANDLE_2") or "@panda_fcuk",
     },
 ]
 

@@ -77,3 +77,28 @@ def test_choose_theme_respects_force_and_avoids_immediate_repeat():
     # just assert it still returns a valid theme (probabilistically never
     # the same one twice in a row is not guaranteed, so only validity here)
     assert pipeline.choose_theme(None) in __import__("themes").THEME_KEYS
+
+
+def test_two_accounts_configured_independently(monkeypatch):
+    import config
+    monkeypatch.setattr(config, "IG_ACTIVE_ACCOUNT", "")
+    assert [a["name"] for a in config.ACCOUNTS] == ["account_1", "account_2"]
+    assert config.ACCOUNTS[1]["username"] == "panda_fcuk"
+    assert config.ACCOUNTS[1]["handle"] == "@panda_fcuk"
+    assert config.ACCOUNTS[0]["username"] == "xene_hotty"
+
+
+def test_active_account_pin_limits_login_target(monkeypatch):
+    import config
+    # Account 2 has no password locally (it lives in GitHub Secrets), so
+    # simulate the CI state where both accounts are fully configured.
+    accounts = [
+        {"name": "account_1", "username": "xene_hotty", "password": "x"},
+        {"name": "account_2", "username": "panda_fcuk", "password": "x"},
+    ]
+    monkeypatch.setattr(config, "IG_ACTIVE_ACCOUNT", "account_2")
+    allowed = [a for a in accounts
+               if a["username"] and a["password"]
+               and (not config.IG_ACTIVE_ACCOUNT
+                    or a["name"] == config.IG_ACTIVE_ACCOUNT)]
+    assert [a["name"] for a in allowed] == ["account_2"]

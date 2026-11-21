@@ -49,6 +49,7 @@ import db
 import notify
 from config import (
     ACCOUNTS,
+    IG_ACTIVE_ACCOUNT,
     ALLOW_PLACEHOLDER,
     BASE_DIR,
     CHARACTER_ID,
@@ -369,7 +370,8 @@ def run_image(args) -> int:
             return 0
 
         # 2. auth preflight (session/cookie based)
-        usable = [a for a in ACCOUNTS if a["username"] and a["password"]]
+        usable = [a for a in ACCOUNTS if a["username"] and a["password"]
+                  and (not IG_ACTIVE_ACCOUNT or a["name"] == IG_ACTIVE_ACCOUNT)]
         if not usable and not dry:
             raise RuntimeError("no accounts configured (set IG_USERNAME_1 etc.)")
         errors: list = []
@@ -613,7 +615,8 @@ def run_reel(args) -> int:
             outcome["status"] = "skipped"
             finish("skipped")
             return 0
-        usable = [a for a in ACCOUNTS if a["username"] and a["password"]]
+        usable = [a for a in ACCOUNTS if a["username"] and a["password"]
+                  and (not IG_ACTIVE_ACCOUNT or a["name"] == IG_ACTIVE_ACCOUNT)]
         if not usable and not dry:
             raise RuntimeError("no accounts configured")
         for acct in usable:

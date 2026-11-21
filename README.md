@@ -50,7 +50,7 @@ prompt are used in every mode.
 ## Quote bank
 
 `assets/quotes/approved.json` is the single source of approved lines. Currently
-300 user-approved entries (`u001`–`u300`); add more with `quote_bank.add_lines()`
+800 user-approved entries (`u001`–`u800`); add more with `quote_bank.add_lines()`
 or by editing the JSON. The application **never** asks an LLM to invent
 replacement quotes.
 
@@ -141,6 +141,38 @@ session before upload; `upload_photo_post` uses `photo_upload` with a fail-fast
 challenge path and a duplicate check after each failed attempt. Secrets live in
 `.env` locally and GitHub Secrets in CI. `python manage.py session` shows only
 cache metadata, never session contents.
+
+## Multiple accounts / full automation
+
+`run_all_accounts.py` runs one complete pipeline post **per configured account** in a
+single scheduled invocation. GitHub Actions calls it instead of `pipeline.py`, so
+each cron slot publishes once to `@xene_hotty` and once to `@panda_fcuk`. A failure
+on one account never blocks the other; each sub-run keeps its own session,
+cadence bucket (`DAILY_CAP_PER_ACCOUNT`) and run label.
+
+To restrict locally:
+
+```powershell
+python run_all_accounts.py --dry-run          # build for both, publish nothing
+python run_all_accounts.py --only account_2   # only @panda_fcuk
+```
+
+**One-time GitHub setup (no code changes needed afterward):**
+- Secrets: `IG_USERNAME_1`/`IG_PASSWORD_1`/`IG_2FA_SECRET_1` (**xene_hotty**),
+  `IG_USERNAME_2`/`IG_PASSWORD_2`/`IG_2FA_SECRET_2` (**panda_fcuk**).
+  Both accounts share the same password — set `IG_PASSWORD_2` to the same
+  value as `IG_PASSWORD_1` in GitHub Secrets (values are never committed).
+- Variables: `IG_HANDLE_1=@xene_hotty`, `IG_HANDLE_2=@panda_fcuk`,
+  `DAILY_CAP_PER_ACCOUNT=6`, `MIN_GAP_MINUTES=0`, `IMAGE_PROVIDER=perchance`,
+  `MUSIC_ENABLED=1`, `MUSIC_SOURCE=trending`, `REEL_DURATION=12`,
+  `CHARACTER_ID=meera-v1`, `QUOTE_LOW_WATERMARK=20`.
+- Settings → Actions → General → Workflow permissions: **Read and write**.
+
+Automation caveats: the first CI login from a datacenter IP may require an
+Instagram challenge (complete it in-app once, clear the `ig-sessions-v2-*` cache,
+re-run). The Perchance wrapper clones a third-party repo at runtime and is the
+main reliability risk. Content moderation is not enforced — see the warning
+about explicit quote text at the top of this README.
 
 ## Scheduling
 
