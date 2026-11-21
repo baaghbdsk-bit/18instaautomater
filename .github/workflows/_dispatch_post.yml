@@ -2,6 +2,7 @@ name: dispatch post (temporary)
 
 # TEMPORARY: lets me start the real workflow without repo-admin auth.
 # Delete after the first successful cloud publish.
+# (touch to re-dispatch: 2)
 on:
   push:
     paths:

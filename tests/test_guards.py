@@ -80,12 +80,24 @@ def test_choose_theme_respects_force_and_avoids_immediate_repeat():
 
 
 def test_two_accounts_configured_independently(monkeypatch):
+    """Account 2 must fall back to panda_fcuk even when CI sets an *empty*
+    IG_USERNAME_2 env var (a missing secret becomes an empty string)."""
+    import importlib
+
     import config
-    monkeypatch.setattr(config, "IG_ACTIVE_ACCOUNT", "")
-    assert [a["name"] for a in config.ACCOUNTS] == ["account_1", "account_2"]
-    assert config.ACCOUNTS[1]["username"] == "panda_fcuk"
-    assert config.ACCOUNTS[1]["handle"] == "@panda_fcuk"
-    assert config.ACCOUNTS[0]["username"] == "xene_hotty"
+
+    monkeypatch.setenv("IG_USERNAME_1", "xene_hotty")
+    monkeypatch.setenv("IG_USERNAME_2", "")
+    monkeypatch.delenv("IG_HANDLE_2", raising=False)
+    reloaded = importlib.reload(config)
+    try:
+        assert [a["name"] for a in reloaded.ACCOUNTS] == ["account_1", "account_2"]
+        assert reloaded.ACCOUNTS[0]["username"] == "xene_hotty"
+        assert reloaded.ACCOUNTS[1]["username"] == "panda_fcuk"
+        assert reloaded.ACCOUNTS[1]["handle"] == "@panda_fcuk"
+    finally:
+        monkeypatch.undo()
+        importlib.reload(config)
 
 
 def test_active_account_pin_limits_login_target(monkeypatch):
