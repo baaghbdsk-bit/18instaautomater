@@ -453,6 +453,10 @@ def build_caption(theme: str, mood: str, line: str,
         parts.append(credit)
     caption = "\n\n".join(p for p in parts if p)
     caption = re.sub(r"\n{3,}", "\n\n", caption)
+    # LLM responses occasionally carry U+FFFD (a byte lost on the wire). In an
+    # English caption it is nearly always a mangled apostrophe, and Instagram
+    # shows it literally, so repair it instead of publishing a broken glyph.
+    caption = caption.replace("\ufffd", "'")
     return caption[:2200]
 
 
