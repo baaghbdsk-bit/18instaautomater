@@ -187,6 +187,12 @@ jobs:
         run: |
           git config user.name "insta-bot"
           git config user.email "actions@users.noreply.github.com"
+          if [ ! -f pipeline-run.log ]; then
+            { echo "=== no pipeline log (earlier step failed) ===";
+              echo "=== perchance.log tail ===";
+              tail -n 120 perchance.log 2>/dev/null || true;
+            } > pipeline-run.log
+          fi
           git add -f pipeline-run.log
           git commit -m "chore: pipeline run log [skip ci]" || true
           for i in 1 2 3; do git push && break || git pull --rebase --autostash; done
