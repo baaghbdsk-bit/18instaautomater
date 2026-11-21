@@ -1,0 +1,16 @@
+[+] account_1: restored session (xene_hotty)
+[=] Daily cap reached on every account. Skipping.
+[-] account_1: session kept for reuse (not invalidated)
+
+================================================================
+  ACCOUNT account_1 (xene_hotty)
+================================================================
+[!] Could not identify the post just published — other accounts will build their own content.
+[+] account_1 completed (original).
+
+================================================================
+  ACCOUNT account_2 (panda_fcuk)
+================================================================
+[!] account_2: no source post available — skipping.
+
+Done. 1/2 account(s) succeeded.
