@@ -128,7 +128,7 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
           NOTIFY_WEBHOOK_URL: ${{ secrets.NOTIFY_WEBHOOK_URL }}
-          DAILY_CAP_PER_ACCOUNT: '10'
+          DAILY_CAP_PER_ACCOUNT: ${{ vars.DAILY_CAP_PER_ACCOUNT || '6' }}
           MIN_GAP_MINUTES: ${{ vars.MIN_GAP_MINUTES || '0' }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
           IMAGE_PROVIDER: ${{ vars.IMAGE_PROVIDER || 'perchance' }}
@@ -144,8 +144,7 @@ jobs:
         run: |
           EXTRA_ARGS=""
           if [ -n "${{ inputs.theme }}" ]; then EXTRA_ARGS="$EXTRA_ARGS --theme ${{ inputs.theme }}"; fi
-          set -o pipefail
-          python run_all_accounts.py --strict --slot "${{ inputs.slot || 'cron' }}" --mode reel 2>&1 | tee pipeline-run.log
+          python run_all_accounts.py --strict --slot "${{ inputs.slot || 'cron' }}" --mode reel
 
       - name: Upload run artifacts
         if: always()
@@ -181,21 +180,6 @@ jobs:
               git pull --rebase --autostash
             }
           done
-
-      - name: Commit run log
-        if: always()
-        run: |
-          git config user.name "insta-bot"
-          git config user.email "actions@users.noreply.github.com"
-          if [ ! -f pipeline-run.log ]; then
-            { echo "=== no pipeline log (earlier step failed) ===";
-              echo "=== perchance.log tail ===";
-              tail -n 120 perchance.log 2>/dev/null || true;
-            } > pipeline-run.log
-          fi
-          git add -f pipeline-run.log
-          git commit -m "chore: pipeline run log [skip ci]" || true
-          for i in 1 2 3; do git push && break || git pull --rebase --autostash; done
 
       - name: Dump Perchance log on failure
         if: failure()
