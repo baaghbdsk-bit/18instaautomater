@@ -73,7 +73,8 @@ CHANNEL_HANDLE = os.getenv("IG_HANDLE_1") or "@xene.ai"
 # Minimum minutes between two publishes (any account).
 MIN_GAP_MINUTES = int(os.getenv("MIN_GAP_MINUTES", "0"))
 # Per-UTC-day publish cap per account.
-DAILY_CAP_PER_ACCOUNT = int(os.getenv("DAILY_CAP_PER_ACCOUNT", "6"))
+# Owner removed the daily cap: 0 means unlimited publishes per account.
+DAILY_CAP_PER_ACCOUNT = 0
 # Local multi-post mode (main.py) pacing.
 POST_INTERVAL_MIN = int(os.getenv("POST_INTERVAL_MIN", "900"))
 POST_INTERVAL_MAX = int(os.getenv("POST_INTERVAL_MAX", "1800"))

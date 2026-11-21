@@ -158,7 +158,7 @@ def doctor() -> int:
     _ok(f"images on hand: {n_images}")
 
     # schedule
-    _ok(f"cadence: cap {DAILY_CAP_PER_ACCOUNT}/day/account, "
+    _ok(f"cadence: {'unlimited' if not DAILY_CAP_PER_ACCOUNT else str(DAILY_CAP_PER_ACCOUNT) + '/day/account'}, "
         f"min gap {MIN_GAP_MINUTES} min, duration {DURATION_MIN}-{DURATION_MAX}s, "
         f"{VIDEO_WIDTH}x{VIDEO_HEIGHT}")
 
@@ -197,7 +197,8 @@ def status() -> int:
                 == datetime.now().strftime("%Y-%m-%d"))
     last = db.last_published_at()
     print(f"posts in db : {db.recent_posts(1000).__len__()}")
-    print(f"published   : {today} today (cap {DAILY_CAP_PER_ACCOUNT})")
+    print(f"published   : {today} today "
+          f"({'no cap' if not DAILY_CAP_PER_ACCOUNT else 'cap ' + str(DAILY_CAP_PER_ACCOUNT)})")
     print(f"last publish: {last or 'never'}")
     print(f"lines       : {db.line_count()} generated")
     print("\nrecent:")

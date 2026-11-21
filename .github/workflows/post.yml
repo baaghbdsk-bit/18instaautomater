@@ -128,7 +128,6 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
           NOTIFY_WEBHOOK_URL: ${{ secrets.NOTIFY_WEBHOOK_URL }}
-          DAILY_CAP_PER_ACCOUNT: ${{ vars.DAILY_CAP_PER_ACCOUNT || '6' }}
           MIN_GAP_MINUTES: ${{ vars.MIN_GAP_MINUTES || '0' }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
           IMAGE_PROVIDER: ${{ vars.IMAGE_PROVIDER || 'perchance' }}

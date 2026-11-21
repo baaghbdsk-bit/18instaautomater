@@ -172,7 +172,8 @@ def pick_account(clients: dict) -> dict | None:
         start_i = 0
     for off in range(len(usable)):
         acct = usable[(start_i + off) % len(usable)]
-        if db.count_published_today(acct["name"]) < DAILY_CAP_PER_ACCOUNT:
+        if (not DAILY_CAP_PER_ACCOUNT or
+                db.count_published_today(acct["name"]) < DAILY_CAP_PER_ACCOUNT):
             db.set_state("rotation_index", str(start_i + off + 1))
             return acct
     return None
@@ -657,7 +658,8 @@ def run_repost(args) -> int:
         if not usable:
             raise RuntimeError("repost: no target account configured")
         account = usable[0]
-        if db.count_published_today(account["name"]) >= DAILY_CAP_PER_ACCOUNT:
+        if (DAILY_CAP_PER_ACCOUNT and
+                db.count_published_today(account["name"]) >= DAILY_CAP_PER_ACCOUNT):
             print(f"[=] {account['name']}: daily cap reached — repost skipped")
             outcome["status"] = "skipped"
             finish("skipped", "daily-cap")

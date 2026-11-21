@@ -148,7 +148,7 @@ cache metadata, never session contents.
 single scheduled invocation. GitHub Actions calls it instead of `pipeline.py`, so
 each cron slot publishes once to `@xene_hotty` and once to `@panda_fcuk`. A failure
 on one account never blocks the other; each sub-run keeps its own session,
-cadence bucket (`DAILY_CAP_PER_ACCOUNT`) and run label.
+per-account session and run label.
 
 To restrict locally:
 
@@ -163,7 +163,7 @@ python run_all_accounts.py --only account_2   # only @panda_fcuk
   Both accounts share the same password — set `IG_PASSWORD_2` to the same
   value as `IG_PASSWORD_1` in GitHub Secrets (values are never committed).
 - Variables: `IG_HANDLE_1=@xene_hotty`, `IG_HANDLE_2=@panda_fcuk`,
-  `DAILY_CAP_PER_ACCOUNT=6`, `MIN_GAP_MINUTES=0`, `IMAGE_PROVIDER=perchance`,
+  `MIN_GAP_MINUTES=0`, `IMAGE_PROVIDER=perchance`,
   `MUSIC_ENABLED=1`, `MUSIC_SOURCE=trending`, `REEL_DURATION=12`,
   `CHARACTER_ID=meera-v1`, `QUOTE_LOW_WATERMARK=20`.
 - Settings → Actions → General → Workflow permissions: **Read and write**.
@@ -224,9 +224,9 @@ about explicit quote text at the top of this README.
 
 `.github/workflows/post.yml` keeps the original six crons/day (`23 */4 * * *`)
 with `concurrency.cancel-in-progress: false`, plus `checker.yml` which
-re-dispatches after two hours of no success. The engine's own guards (daily cap,
-minimum gap, duplicate caption, crash reconciliation) make redundant dispatches
-harmless.
+re-dispatches after two hours of no success. The engine's own guards
+(duplicate caption, crash reconciliation) make redundant dispatches harmless.
+There is no daily cap: every slot posts one piece of content to both accounts.
 
 ## Diagnostics
 
