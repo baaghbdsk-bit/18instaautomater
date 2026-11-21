@@ -182,7 +182,7 @@ YCbCr Matrix: TV.709
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Quote,Anton,{size},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,{TEXT_OUTLINE},0,5,{MARGIN_X},{MARGIN_X},0,1
-Style: Mark,Archivo Black,38,{accent},&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,1,0,1,3,0,8,{MARGIN_X},{MARGIN_X},150,1
+Style: Mark,Archivo Black,38,{accent},&H000000FF,&H90000000,&H80000000,0,0,0,0,100,100,1,0,3,8,0,2,{MARGIN_X},{MARGIN_X},90,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -201,7 +201,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     if handle:
         events.append(
             f"Dialogue: 0,{_ass_time(0.5)},{_ass_time(duration)},Mark,,0,0,0,,"
-            f"{{\\an8\\fad(300,0)}}{_esc(handle)}"
+            f"{{\\an2\\fad(300,0)}}{_esc(handle)}"
         )
     return header + "\n".join(events) + "\n"
 

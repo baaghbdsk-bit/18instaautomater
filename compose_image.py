@@ -209,10 +209,21 @@ def compose_quote_image(source_path, quote, output_path=None, variant="lower",
             )
 
         if handle:
+            # Keep the handle OFF the face: bottom-centre on a dark pill.
+            # The old top placement landed on the subject's forehead/hair.
+            label = str(handle)
+            hy = 0.94 * VIDEO_HEIGHT
+            box = draw.textbbox((0, 0), label, font=h_font)
+            tw, th = box[2] - box[0], box[3] - box[1]
+            pad_x, pad_y = 22, 12
+            draw.rounded_rectangle(
+                (cx - tw / 2 - pad_x, hy - th / 2 - pad_y,
+                 cx + tw / 2 + pad_x, hy + th / 2 + pad_y),
+                radius=16, fill=(8, 8, 8),
+            )
             draw.text(
-                (cx, 0.08 * VIDEO_HEIGHT), str(handle), font=h_font,
+                (cx, hy), label, font=h_font,
                 fill=_accent_rgb(), anchor="mm",
-                stroke_width=STROKE_WIDTH, stroke_fill=(0, 0, 0),
             )
 
         # 5. Save atomically with a unique timestamp name when unspecified.

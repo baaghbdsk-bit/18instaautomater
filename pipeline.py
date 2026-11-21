@@ -526,7 +526,12 @@ def run_image(args) -> int:
         # 12b. optional Instagram catalog music (works on photo posts)
         track = None
         if MUSIC_ENABLED:
-            track, track_id = pick_music_track(cl)
+            used_music = [r["key"] for r in db.asset_usage("music")]
+            track, track_id = pick_music_track(
+                cl, used_keys=used_music,
+                mood=getattr(variation, "mood", None))
+            if track_id:
+                db.mark_asset("music", track_id)
             if track is not None:
                 try:
                     meta = json.loads((db.get_post(post_id) or {}).get(

@@ -201,6 +201,22 @@ re-run). The Perchance wrapper clones a third-party repo at runtime and is the
 main reliability risk. Content moderation is not enforced — see the warning
 about explicit quote text at the top of this README.
 
+## Content quality controls
+
+- **Music matches the scene.** Each curated variation has a `mood` (e.g.
+  `playful and alluring`, `dreamy and free`). `music_match.py` maps that mood to
+  Instagram catalog search queries, searches the live catalog and ranks results
+  by title/artist match, with global trending only as a fallback. Used track IDs
+  are recorded via `db.mark_asset("music", ...)` so they rotate.
+- **Styling is alluring but non-explicit.** Scene outfits in
+  `character/variations.py` use thin-strap satin, slip dresses, high slits,
+  swimwear and open layers. Nudity and explicit sexual activity are excluded by
+  the fixed profile and negative prompt — this keeps the accounts within
+  Instagram's rules and is not negotiable here.
+- **Handle placement.** The `@handle` is rendered bottom-centre on a dark pill
+  in both the composed still and the Reel subtitles, so it no longer covers the
+  subject's face.
+
 ## Scheduling
 
 `.github/workflows/post.yml` keeps the original six crons/day (`23 */4 * * *`)

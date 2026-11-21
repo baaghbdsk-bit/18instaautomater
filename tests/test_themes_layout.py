@@ -64,6 +64,16 @@ def test_build_ass_structure():
     assert ",Quote,,0,0,0,," in ass
 
 
+def test_handle_is_at_bottom_not_on_the_face():
+    q = {"size": 96, "lines": ["Line one", "Line two"]}
+    ass = build_ass(q, 1080, 1920, 12.0, "lower", "@xene.ai")
+    mark = next(l for l in ass.splitlines() if l.startswith("Style: Mark,"))
+    # alignment 2 = bottom-centre (8 used to be top-centre over the forehead)
+    assert ",2,88,88,90,1" in mark
+    assert "\\an2\\fad(300,0)" in ass
+    assert "\\an8" not in ass
+
+
 def test_motion_expressions_are_wellformed():
     for m in ["push_center", "push_up", "push_down", "drift_left", "drift_right"]:
         expr = motion_expressions(m, frames=360)

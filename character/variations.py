@@ -55,7 +55,7 @@ class Variation:
 VARIATIONS = [
     Variation(
         key="silk_robe_bedroom",
-        outfit="luxurious champagne silk robe",
+        outfit="luxurious champagne silk robe worn open over a satin camisole and fitted shorts",
         pose="seated upright on a plush bed with one leg tucked beneath her",
         expression="soft confident smile",
         gaze="direct eye contact with the camera",
@@ -70,7 +70,7 @@ VARIATIONS = [
     ),
     Variation(
         key="neon_night_street",
-        outfit="sleek black satin slip dress with a fitted leather jacket",
+        outfit="thin-strap black satin slip dress with a cropped leather jacket left open",
         pose="standing against a wall, one hand relaxed in her pocket",
         expression="confident smirk",
         gaze="looking slightly past the camera",
@@ -85,7 +85,7 @@ VARIATIONS = [
     ),
     Variation(
         key="golden_hour_beach",
-        outfit="flowing white summer sundress",
+        outfit="high-cut white one-piece swimsuit with a sheer cover-up tied at the waist",
         pose="walking along the shoreline, hem moving in the wind",
         expression="carefree laugh",
         gaze="looking toward the horizon",
@@ -100,7 +100,7 @@ VARIATIONS = [
     ),
     Variation(
         key="studio_fashion_editorial",
-        outfit="structured emerald velvet gown",
+        outfit="emerald satin gown with thin straps and a high slit",
         pose="standing tall, shoulders back, one hand on her hip",
         expression="fierce composed expression",
         gaze="direct intense eye contact",
@@ -115,7 +115,7 @@ VARIATIONS = [
     ),
     Variation(
         key="cafe_window_candid",
-        outfit="cosy oversized cream knit sweater",
+        outfit="fitted silk blouse with the top buttons open and a high-waisted pencil skirt",
         pose="seated by a window, cradling a ceramic mug",
         expression="warm gentle smile",
         gaze="glancing out of the window",
@@ -130,7 +130,7 @@ VARIATIONS = [
     ),
     Variation(
         key="rooftop_pool_dusk",
-        outfit="elegant navy wrap swimsuit with a sheer cover-up",
+        outfit="navy high-cut one-piece swimsuit",
         pose="lounging on a sun lounger, legs gracefully crossed",
         expression="playful confident smile",
         gaze="looking back over her shoulder at the camera",
@@ -145,7 +145,7 @@ VARIATIONS = [
     ),
     Variation(
         key="office_chic_blazer",
-        outfit="tailored charcoal blazer over a silk camisole",
+        outfit="unbuttoned tailored charcoal blazer over a silk camisole",
         pose="seated at a desk, leaning forward slightly",
         expression="focused confident expression",
         gaze="direct steady eye contact",
@@ -190,7 +190,7 @@ VARIATIONS = [
     ),
     Variation(
         key="festival_sunshine",
-        outfit="colorful bohemian maxi dress",
+        outfit="cropped bohemian top and a flowing maxi skirt",
         pose="dancing with arms lifted slightly",
         expression="joyful bright smile",
         gaze="looking straight into the camera",
@@ -205,7 +205,7 @@ VARIATIONS = [
     ),
     Variation(
         key="marble_staircase_glamour",
-        outfit="floor-length burgundy sequin evening gown",
+        outfit="floor-length burgundy satin gown with a thigh-high slit and thin straps",
         pose="descending a marble staircase, one hand on the railing",
         expression="serene confident smile",
         gaze="looking down toward the camera",
@@ -220,7 +220,7 @@ VARIATIONS = [
     ),
     Variation(
         key="streetwear_golden",
-        outfit="oversized stylish streetwear jacket with fitted trousers",
+        outfit="cropped streetwear jacket over a fitted tank top and high-waisted trousers",
         pose="leaning casually against a graffiti wall, arms crossed",
         expression="cool confident smirk",
         gaze="looking directly at the camera",
