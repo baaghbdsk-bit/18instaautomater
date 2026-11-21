@@ -57,7 +57,7 @@ ACCOUNTS = [
     },
     {
         "name": "account_2",
-        "username": os.getenv("IG_USERNAME_2", "panda_fcuk"),
+        "username": os.getenv("IG_USERNAME_2") or "panda_fcuk",
         "password": os.getenv("IG_PASSWORD_2", ""),
         "two_factor_secret": os.getenv("IG_2FA_SECRET_2", ""),
         "handle": os.getenv("IG_HANDLE_2") or "@panda_fcuk",
