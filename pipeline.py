@@ -635,8 +635,22 @@ def run_repost(args) -> int:
         if not media or not Path(media).exists():
             raise RuntimeError(f"repost: media missing at {media}")
         thumb = source.get("final_image_path")
-        if not thumb or not Path(thumb).exists():
-            thumb = None
+        if (not thumb or not Path(thumb).exists()
+                or Path(thumb).stat().st_size < 1000):
+            # The original composed still may not be present in a fresh
+            # runner. instagrapi needs an explicit thumbnail for Reel music,
+            # so derive one from the video's first frame instead.
+            import subprocess
+
+            from config import FFMPEG_BIN
+
+            fallback = TMP_DIR / f"repost_thumb_{source_id}.jpg"
+            subprocess.run(
+                [FFMPEG_BIN, "-y", "-loglevel", "error", "-i", media,
+                 "-frames:v", "1", "-q:v", "2", str(fallback)],
+                capture_output=True, timeout=60, check=False)
+            thumb = str(fallback) if fallback.exists() else None
+        print(f"[*] Thumbnail: {thumb}")
 
         usable = [a for a in ACCOUNTS if a["username"] and a["password"]
                   and (not IG_ACTIVE_ACCOUNT or a["name"] == IG_ACTIVE_ACCOUNT)]
