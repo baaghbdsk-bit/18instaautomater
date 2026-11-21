@@ -1,5 +1,0 @@
-runner_egress_check
-[+] account_1: restored session (xene_hotty)
-account_1 (xene_hotty): OK authenticated as xene_hotty
-[+] account_2: restored session (panda_fcuk)
-account_2 (panda_fcuk): OK authenticated as panda_fcuk
