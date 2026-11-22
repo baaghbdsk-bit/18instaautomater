@@ -4,45 +4,50 @@ Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/xen
 Status 404: Endpoint /v1/qe/expose/ does not exist
 [+] account_1: restored session (xene_hotty)
 [*] Account : account_1 (xene_hotty)
-[*] Quote   : My imagination doesn't need an invitation. It arrives dressed for the occasion.  [u020]
-[*] Variation: studio_fashion_editorial / character meera-v1
+[*] Quote   : Some girls play hard to get. I prefer playing hard to forget.  [u021]
+[*] Variation: cafe_window_candid / character meera-v1
 [*] Prompt  : Fictional adult woman, age 25, South Asian Indian, 165cm, fair-medium luminous skin, long voluminous wavy dark chocolate-brown hair with center part, round full-cheeked soft oval f...
 [*] Provider: perchance
-[*] Raw image: /home/runner/work/18instaautomater/18instaautomater/assets/images/perchance_20261122_075530_868373_f6e6a2.jpg
-[+] Valid image: 1080x1920, 0.3 MB
-[+] Valid reel: 12.0s, 2.2 MB
+[*] Raw image: /home/runner/work/18instaautomater/18instaautomater/assets/images/perchance_20261122_081153_158526_ad19c7.jpg
+[+] Valid image: 1080x1920, 0.4 MB
+[+] Valid reel: 12.0s, 2.1 MB
 [music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
 [music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] track discovery failed: AttributeError: 'Client' object has no attribute 'music_top_trends'
 [music] SLOWBURN 'dirty_thoughts' not resolvable via search_music()
 [music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
 [music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] track discovery failed: AttributeError: 'Client' object has no attribute 'music_top_trends'
 [music] SLOWBURN 'tease_me' not resolvable via search_music()
 [music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
 [music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] track discovery failed: AttributeError: 'Client' object has no attribute 'music_top_trends'
 [music] SLOWBURN 'i_want_you_so_bad' not resolvable via search_music()
 [music] search_music('slowburn r&b') failed: AttributeError: 'NoneType' object has no attribute 'get'
 [music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] track discovery failed: AttributeError: 'Client' object has no attribute 'music_top_trends'
 [music] SLOWBURN 'naughty_girl' not resolvable via search_music()
 [music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] track discovery failed: AttributeError: 'Client' object has no attribute 'music_top_trends'
 [music] no SLOWBURN track available — posting without audio
-Analyzing CLIP file "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_075531.mp4"
-Generating thumbnail "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_075531.mp4.jpg"...
+Analyzing CLIP file "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_081153.mp4"
+Generating thumbnail "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_081153.mp4.jpg"...
     [!] reel upload attempt 1/3 failed: 404 Client Error: Not Found for url: https://i.instagram.com/api/v1/qe/expose/
-    [+] upload actually succeeded — found live (pk=4035878577972517533)
-[+] Published: 4035878577972517533
+    [+] upload actually succeeded — found live (pk=4035886821935693966)
+[+] Published: 4035886821935693966
 [-] account_1: session kept for reuse (not invalidated)
 Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/panda_fcuk/?__a=1&__d=dis) >>> 
 Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/panda_fcuk/?__a=1&__d=dis) >>> 
 Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/panda_fcuk/?__a=1&__d=dis) >>> 
 Status 404: Endpoint /v1/qe/expose/ does not exist
-[*] Thumbnail: /home/runner/work/18instaautomater/18instaautomater/assets/final/compose_20261122_075531_021040_81587c.jpg
+[*] Thumbnail: /home/runner/work/18instaautomater/18instaautomater/assets/final/compose_20261122_081153_267271_ff2c7f.jpg
 [+] account_2: restored session (panda_fcuk)
-[*] Repost to account_2 (panda_fcuk): post #33 -> #34
-Analyzing CLIP file "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_075531.mp4"
-Generating thumbnail "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_075531.mp4.jpg"...
+[*] Repost to account_2 (panda_fcuk): post #35 -> #36
+Analyzing CLIP file "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_081153.mp4"
+Generating thumbnail "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_081153.mp4.jpg"...
     [!] reel upload attempt 1/3 failed: 404 Client Error: Not Found for url: https://i.instagram.com/api/v1/qe/expose/
-    [+] upload actually succeeded — found live (pk=4035882144420838219)
-[+] Published: 4035882144420838219
+    [+] upload actually succeeded — found live (pk=4035890512820557409)
+[+] Published: 4035890512820557409
 [-] account_2: session kept for reuse (not invalidated)
 
 ================================================================
