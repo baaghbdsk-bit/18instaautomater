@@ -20,28 +20,18 @@ from dataclasses import dataclass, field, replace
 
 # Canonical identity — kept verbatim. Do not redesign or silently slim her.
 FIXED_IDENTITY = (
-    "Fictional adult woman, age 25, South Asian / Indian appearance, "
-    "approx 165 cm tall, fair to fair-medium luminous skin, long voluminous "
-    "wavy dark chocolate-brown hair, round full-cheeked soft oval face, large "
-    "almond-shaped dark brown eyes, defined eyebrows, delicate nose, full "
-    "lips, confident attractive expressive appearance, full-figured thick "
-    "healthy curvy hourglass body, fuller upper arms, broad shoulders, "
-    "full prominent bust, natural waist and soft belly, wide hips, rounded "
-    "full butt and thick thighs. Never silently transform her into a skinny/slim or "
-    "different-looking character. Style: glamorous, bold, flirty, seductive, "
-    "fashion-forward, visually striking, provocative but NON-EXPLICIT. "
-    "Always an adult fictional character. No nudity, no explicit sexual "
-    "activity."
+    "Fictional adult woman, age 25, South Asian Indian, 165cm, fair-medium luminous skin, long voluminous wavy dark chocolate-brown hair with center part, round full-cheeked soft oval face, SAME FACE IN EVERY IMAGE, large almond-shaped dark brown eyes with thick lashes, defined arched eyebrows, delicate straight nose, full rose lips slightly parted, small mole below left lip corner, confident seductive expression, full-figured thick curvy hourglass body, fuller upper arms, broad shoulders, full prominent bust with deep cleavage emphasis, natural waist and soft belly, wide hips, rounded full butt, thick thighs with soft thigh gap, Style: ultra-alluring, slutty-chic, teasing, male-gaze, lust-appealing, sexually pleasing, glamorous bold flirty seductive fashion-forward, provocative tease but NO NUDITY. Always adult. Never skinny/slim. Never change face."
 )
 
-# Negative prompt - reinforces the non-explicit, platform-safe, identity-safe
-# boundaries described above.
+# Unified negative prompt — bans only hard NSFW/anatomy/identity-drift terms.
+# NEVER bans: cleavage, lingerie, underwear, see-through, sexy, seductive,
+# alluring — those are REQUIRED for the alluring look.
 DEFAULT_NEGATIVE_PROMPT = (
-    "nudity, explicit sexual activity, sexually explicit content, topless, "
-    "minors, child, teenage, underage, skinny, slim, anorexic, thin body, "
-    "different-looking character, distorted facial features, deformed hands, "
-    "extra fingers, duplicated limbs, visible text, watermark, signature, "
-    "logo, low quality, blurry, unintended artifacts"
+    "nudity, nipples, areola, genitalia, pubic hair, explicit sexual activity, "
+    "porn, minors, child, teenage, underage, skinny, slim, thin body, anorexic, "
+    "different face, different-looking character, face change, distorted face, "
+    "deformed hands, extra fingers, duplicated limbs, text, watermark, logo, "
+    "low quality, blurry, artifacts"
 )
 
 

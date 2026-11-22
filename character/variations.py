@@ -26,11 +26,23 @@ DIMENSIONS = (
 # Quality constraints appended to every prompt. "adult subject" and the
 # non-explicit/no-nudity clauses are deliberate platform-safety guardrails.
 QUALITY_CONSTRAINTS = (
-    "realistic anatomy, natural hands and fingers, consistent facial "
-    "features, natural body proportions, high-quality photographic "
-    "appearance, no distorted facial features, no duplicated limbs, no "
-    "visible text or watermark, no unintended artifacts, adult subject, "
-    "non-explicit, no nudity"
+    "realistic anatomy, natural hands and fingers, identical consistent facial "
+    "features as described, natural curvy body proportions, high-quality "
+    "photographic appearance, sharp detailed face, no distorted face, no "
+    "duplicated limbs, no text watermark logo, adult subject 25yo, teasing "
+    "non-nude, no nipples no areola no genitalia no pubic hair, no explicit "
+    "sexual activity"
+)
+
+# Allure emphasis block — appended after scene details in every prompt.
+# Forces revealing, body-showing, lust-appealing output without nudity.
+ALLURE_BLOCK = (
+    "Allure emphasis: ultra-sexy revealing body-hugging outfit, short length, "
+    "deep neckline with cleavage, bare shoulders and midriff and thighs on "
+    "show, curvy body fully visible, seductive pose with hips tilted and "
+    "chest pushed forward, direct lustful eye contact, glossy parted lips, "
+    "teasing playful lustful mood, Instagram baddie reel aesthetic, "
+    "photoreal skin texture, sharp focus on face and body"
 )
 
 
@@ -302,6 +314,7 @@ def build_prompt(profile: CharacterProfile, variation: Variation,
     parts = [
         profile.identity_prompt(),
         "Scene details: " + scene,
+        ALLURE_BLOCK,
         "Quality constraints: " + QUALITY_CONSTRAINTS,
     ]
     if extra and extra.strip():

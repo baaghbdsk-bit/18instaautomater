@@ -144,12 +144,17 @@ MARGIN_X = 88
 PERCHANCE_URL = os.getenv("PERCHANCE_URL", "http://127.0.0.1:8000")
 PERCHANCE_STYLE = os.getenv("PERCHANCE_STYLE", "Cinematic")
 PERCHANCE_ASPECT = os.getenv("PERCHANCE_ASPECT", "512x768")
-PERCHANCE_GUIDANCE = float(os.getenv("PERCHANCE_GUIDANCE", "7"))
-# Hard safety net — never generate explicit material (IG bans fast).
+PERCHANCE_GUIDANCE = float(os.getenv("PERCHANCE_GUIDANCE", "9"))
+# Unified negative prompt — bans only hard NSFW/anatomy/identity-drift terms.
+# NEVER bans: cleavage, lingerie, underwear, see-through, sexy, seductive,
+# alluring — those are REQUIRED for the alluring look.
 PERCHANCE_NEGATIVE = os.getenv(
     "PERCHANCE_NEGATIVE",
-    "nude, naked, explicit, porn, sexual, NSFW, underwear, lingerie, "
-    "see-through, topless, cleavage",
+    "nudity, nipples, areola, genitalia, pubic hair, explicit sexual activity, "
+    "porn, minors, child, teenage, underage, skinny, slim, thin body, anorexic, "
+    "different face, different-looking character, face change, distorted face, "
+    "deformed hands, extra fingers, duplicated limbs, text, watermark, logo, "
+    "low quality, blurry, artifacts",
 )
 
 # ---------------------------------------------------------------------------

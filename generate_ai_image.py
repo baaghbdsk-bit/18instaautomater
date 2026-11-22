@@ -40,6 +40,24 @@ PROMPTS = [
 ]
 
 
+def _persisted_seed() -> str:
+    """Stable persisted seed — same value every call, stored in SQLite.
+
+    Replaces the old per-call random.randint so the standalone script no
+    longer rolls a new seed every generation (which caused face drift).
+    """
+    key = "image_gen_seed:default"
+    raw = db.get_state(key)
+    if raw:
+        try:
+            return str(int(raw))
+        except ValueError:
+            pass
+    seed = random.randint(0, 2**31 - 1)
+    db.set_state(key, str(seed))
+    return str(seed)
+
+
 def _try_perchance(prompt: str) -> Path | None:
     """Generate via the local Perchance-API wrapper. Returns path or None."""
     try:
@@ -59,7 +77,7 @@ def _try_perchance(prompt: str) -> Path | None:
         "aspect_ratio": PERCHANCE_ASPECT,
         "guidance_scale": PERCHANCE_GUIDANCE,
         "num_images": 1,
-        "seed": str(random.randint(0, 2**31 - 1)),
+        "seed": _persisted_seed(),
     }
 
     print(f"    [*] Perchance: {prompt[:70]}...")
