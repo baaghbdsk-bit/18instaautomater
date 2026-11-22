@@ -490,8 +490,17 @@ def still_video(image_path, output_path, duration: float | None = None,
             "-pix_fmt", "yuv420p", "-color_range", "tv",
             "-movflags", "+faststart"]
     if has_audio:
-        cmd += ["-map", "0:v:0", "-map", "1:a:0?", "-c:a", "aac",
-                "-b:a", "128k", "-ar", "48000", "-shortest"]
+        # Match the working reel-engine: smooth fades and loudness targets so
+        # every bank track plays at a consistent, audible level.
+        fade_out = max(0.0, duration - 1.2)
+        afilter = (
+            f"atrim=0:{duration},asetpts=PTS-STARTPTS,"
+            f"afade=t=in:st=0:d=0.6,"
+            f"afade=t=out:st={fade_out:.2f}:d=1.2,"
+            f"loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000"
+        )
+        cmd += ["-map", "0:v:0", "-map", "1:a:0", "-af", afilter,
+                "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-shortest"]
     else:
         # No audio file exists at all — still must not be silent:
         # generate a 1kHz tone so validate_video sees an AAC stream.

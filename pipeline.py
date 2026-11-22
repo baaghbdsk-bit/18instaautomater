@@ -61,6 +61,7 @@ from config import (
     KILL_SWITCH,
     MIN_GAP_MINUTES,
     MUSIC_CREDIT,
+    MUSIC_CREDIT_IN_CAPTION,
     MUSIC_ENABLED,
     OUTPUT_DIR,
     PERCHANCE_ASPECT,
@@ -72,6 +73,7 @@ from config import (
     TMP_DIR,
 )
 from audio_mux import mux_track_audio
+from local_music import pick_local_track
 from music_match import track_from_metadata, pick_orgavsm_track
 from post_instagram import (
     find_duplicate,
@@ -359,6 +361,7 @@ def run_image(args) -> int:
     run_id = db.start_run(args.slot)
     clients: dict = {}
     post_id = None
+    local_track = None
     notes: list = []
     outcome = {"status": "failed", "theme": "image-post", "line": None,
                "info": None}
@@ -499,11 +502,15 @@ def run_image(args) -> int:
         if args.mode == "reel":
             reel_path = OUTPUT_DIR / (
                 f"reel_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4")
-            # The MP4 must always carry an AAC audio stream so it is never
-            # silent, whether or not a catalog track is available.
+            # Local bank first: no catalog API, no rate limits, and the audio
+            # is physically muxed into the MP4 so it is always audible.
+            local_track = pick_local_track() if MUSIC_ENABLED else None
+            if local_track:
+                print(f"[*] Local music: {local_track['title']} "
+                      f"({local_track['pool']})")
             reel = still_video(final_path, reel_path,
                                silent_audio=False,
-                               music_path=None)
+                               music_path=(local_track or {}).get("path"))
             vok, vreasons, vinfo2 = validate_video(
                 reel["path"], require_audio=True)
             if not vok:
@@ -523,8 +530,11 @@ def run_image(args) -> int:
 
         # 11. caption (music credit is not applicable to static image posts)
         from lines import build_caption
+        credit = ""
+        if local_track and MUSIC_CREDIT_IN_CAPTION:
+            credit = local_track["credit"]
         caption = build_caption("image-post", quote.mood or "flirty",
-                                quote.text, credit="")
+                                quote.text, credit=credit)
         db.update_post(post_id, caption_text=caption)
 
         if dry:
@@ -544,9 +554,25 @@ def run_image(args) -> int:
             finish("skipped", "duplicate-caption")
             return 0
 
-        # 12b. optional Instagram catalog music — ORGAVSM Audio IDs only.
+        # 12b. Instagram catalog music is only a fallback when the local
+        # bank is empty. Local audio is already muxed into the MP4 above.
         track = None
-        if MUSIC_ENABLED:
+        if local_track:
+            try:
+                meta = json.loads((db.get_post(post_id) or {}).get(
+                    "prompt_metadata") or "{}")
+            except (ValueError, TypeError):
+                meta = {}
+            meta["music"] = {
+                "track_id": Path(local_track["path"]).name,
+                "title": local_track["title"],
+                "artist": local_track["pool"],
+                "source": "local_bank",
+                "credit": local_track["credit"],
+            }
+            db.update_post(post_id, prompt_metadata=json.dumps(
+                meta, ensure_ascii=False))
+        elif MUSIC_ENABLED:
             used_music = [r["key"] for r in db.asset_usage("music")]
             track, track_id = pick_orgavsm_track(
                 cl, used_keys=used_music,
@@ -728,8 +754,9 @@ def run_repost(args) -> int:
             meta = json.loads(source.get("prompt_metadata") or "{}")
         except (ValueError, TypeError):
             pass
-        track = (track_from_metadata(cl, meta.get("music"))
-                 if MUSIC_ENABLED else None)
+        track = None
+        if MUSIC_ENABLED and (meta.get("music") or {}).get("source") != "local_bank":
+            track = track_from_metadata(cl, meta.get("music"))
         if meta.get("music"):
             label = f"{meta['music'].get('title')} — {meta['music'].get('artist')}"
             print(f"[*] Music : {label} (same track as original)")

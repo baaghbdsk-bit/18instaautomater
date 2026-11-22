@@ -203,7 +203,15 @@ about explicit quote text at the top of this README.
 
 ## Content quality controls
 
-- **Music identity: SLOWBURN first, ORGAVSM as rotation.** `music_match.py`
+- **Local music bank (primary).** `assets/music/custom/` is checked first —
+  drop owner-supplied tracks there (subfolders `flirty/`, `bold/`, `dreamy/`).
+  Otherwise the 15 CC-BY 4.0 tracks in `assets/music/{chill,dark,energy}/` are
+  used. `local_music.py` rotates least-recently-used via SQLite, and
+  `generate_video.still_video()` muxes the file into the MP4 with fades and
+  `loudnorm`. No Instagram catalog API is needed, so rate limits cannot affect
+  audio. Catalog lookup remains only as a fallback when the bank is empty.
+
+- **Music identity (catalog fallback): SLOWBURN first, ORGAVSM as rotation.** `music_match.py`
   holds verified catalog track IDs for both artists, ordered per scene mood.
   There is no generic keyword search and no trending fallback: a post goes out
   without music rather than with an off-theme track. The MP4 is rendered with
