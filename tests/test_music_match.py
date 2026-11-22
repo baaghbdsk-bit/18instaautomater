@@ -41,6 +41,9 @@ def test_cooldown_is_persisted_in_db(monkeypatch):
 
 
 def test_pick_logs_audio_id_and_rotates():
+    # Persistent cooldown state must not leak between CI runs/tests.
+    for key in music_match.ORGAVSM_KEYS:
+        db.set_state(f"orgavsm_last_used:{key}", "0")
     first = music_match.CURATED_TRACKS["touch_my_body"]
     second = music_match.CURATED_TRACKS["naughty"]
     a = SimpleNamespace(id=first["track_id"], title="Touch my body")
