@@ -574,10 +574,10 @@ def run_image(args) -> int:
             except (ValueError, TypeError):
                 meta = {}
             meta["music"] = {
-                "track_id": Path(local_track["path"]).name,
+                "track_id": local_track.get("track_id") or Path(local_track["path"]).name,
                 "title": local_track["title"],
-                "artist": local_track["pool"],
-                "source": "local_bank",
+                "artist": (local_track.get("artist") or local_track["pool"]),
+                "source": local_track.get("source", "local_bank"),
                 "credit": local_track["credit"],
             }
             db.update_post(post_id, prompt_metadata=json.dumps(
