@@ -96,8 +96,18 @@ def search_slowburn(cl, queries) -> list:
     return found
 
 
+def _trending_catalog(cl) -> list:
+    """Fallback when search_music() is broken by an Instagram API change."""
+    try:
+        from post_instagram import find_trending_tracks
+        return list(find_trending_tracks(cl, limit=40) or [])
+    except Exception as e:  # noqa: BLE001
+        print(f"[music] trending catalog failed: {type(e).__name__}: {str(e)[:120]}")
+        return []
+
+
 def find_curated_track(cl, item: dict, exclude_ids=None):
-    """Resolve an entry to a playable SLOWBURN Track from search_music()."""
+    """Resolve an entry to a playable SLOWBURN Track from the live catalog."""
     exclude = {str(x) for x in (exclude_ids or [])}
     queries = [item["query"], "slowburn", "slow burn"]
     title = str(item.get("title", ""))
@@ -105,6 +115,12 @@ def find_curated_track(cl, item: dict, exclude_ids=None):
         queries += [title, f"{title} SLOWBURN"]
     tracks = [t for t in search_slowburn(cl, queries)
               if str(getattr(t, "id", "")) not in exclude]
+    if not tracks:
+        # search_music can fail with AttributeError on some runner regions;
+        # the trending catalog uses a different endpoint and still returns
+        # genuine Audio IDs + playable audio URLs.
+        tracks = [t for t in _trending_catalog(cl)
+                  if str(getattr(t, "id", "")) not in exclude]
     wanted = str(item["track_id"])
     for track in tracks:
         if str(getattr(track, "id", "")) == wanted and _has_audio(track):
@@ -150,8 +166,8 @@ def pick_orgavsm_track(cl, used_keys: list | None = None,
             return track, track_key(track)
         print(f"[music] SLOWBURN '{key}' not resolvable via search_music()")
 
-    dynamic = [t for t in search_slowburn(cl, ["slowburn", "slow burn"])
-               if _has_audio(t) and track_key(t) not in used]
+    pool = search_slowburn(cl, ["slowburn", "slow burn"]) or _trending_catalog(cl)
+    dynamic = [t for t in pool if _has_audio(t) and track_key(t) not in used]
     if dynamic:
         dynamic.sort(key=lambda t: _last_used(track_key(t)))
         track = dynamic[0]

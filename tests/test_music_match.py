@@ -62,10 +62,22 @@ def test_pick_logs_audio_id_and_rotates():
     client.music_top_trends.assert_not_called()
 
 
-def test_pick_returns_none_when_catalog_unavailable():
+def test_pick_returns_none_when_catalog_unavailable(monkeypatch):
+    monkeypatch.setattr(music_match, "_trending_catalog", lambda cl: [])
     client = MagicMock()
     client.search_music.return_value = []
     assert post_instagram.pick_music_track(client, mood="flirty") == (None, None)
+
+
+def test_trending_catalog_fallback_when_search_broken(monkeypatch):
+    item = music_match.CURATED_TRACKS["crave_you"]
+    fake = SimpleNamespace(id=item["track_id"], title="Crave You",
+                           display_artist="SLOWBURN",
+                           progressive_download_url="http://audio")
+    monkeypatch.setattr(music_match, "_trending_catalog", lambda cl: [fake])
+    client = MagicMock()
+    client.search_music.side_effect = AttributeError("'NoneType' object has no attribute 'get'")
+    assert music_match.find_curated_track(client, item) is fake
 
 
 def test_styling_guardrails_intact():
