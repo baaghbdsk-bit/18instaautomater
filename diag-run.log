@@ -1,20 +1,47 @@
 Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/xene_hotty/?__a=1&__d=dis) >>> 
 Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/xene_hotty/?__a=1&__d=dis) >>> 
 Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/xene_hotty/?__a=1&__d=dis) >>> 
+Status 404: Endpoint /v1/qe/expose/ does not exist
 [+] account_1: restored session (xene_hotty)
-[=] Daily cap reached on every account. Skipping.
+[*] Account : account_1 (xene_hotty)
+[*] Quote   : If my eyes could talk, you'd probably ask me to repeat myself.  [u024]
+[*] Variation: neon_night_street / character meera-v1
+[*] Prompt  : Fictional adult woman, age 25, South Asian Indian appearance, approx 165 cm tall, fair to fair-medium luminous skin with photoreal pores, long voluminous wavy dark chocolate-brown ...
+[*] Provider: perchance
+[*] Raw image: /home/runner/work/18instaautomater/18instaautomater/assets/images/perchance_20261122_164940_443988_3ee4e1.jpg
+[+] Valid image: 1080x1920, 0.5 MB
+[*] Music: São Paulo (curated)
+[+] Valid reel: 12.0s, 2.4 MB
+Analyzing CLIP file "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_164940.mp4"
+Generating thumbnail "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_164940.mp4.jpg"...
+    [!] reel upload attempt 1/3 failed: 404 Client Error: Not Found for url: https://i.instagram.com/api/v1/qe/expose/
+    [+] upload actually succeeded — found live (pk=4036146869790420651)
+[+] Published: 4036146869790420651
 [ig] media_info(4035950046721176952) failed: geoblock_required
 [-] account_1: session kept for reuse (not invalidated)
+Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/panda_fcuk/?__a=1&__d=dis) >>> 
+Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/panda_fcuk/?__a=1&__d=dis) >>> 
+Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/panda_fcuk/?__a=1&__d=dis) >>> 
+Status 404: Endpoint /v1/qe/expose/ does not exist
+[*] Thumbnail: /home/runner/work/18instaautomater/18instaautomater/assets/final/compose_20261122_164940_534498_4a8bf0.jpg
+[+] account_2: restored session (panda_fcuk)
+[*] Music : São Paulo — curated (same track as original)
+[*] Repost to account_2 (panda_fcuk): post #41 -> #42
+Analyzing CLIP file "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_164940.mp4"
+Generating thumbnail "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_164940.mp4.jpg"...
+    [!] reel upload attempt 1/3 failed: 404 Client Error: Not Found for url: https://i.instagram.com/api/v1/qe/expose/
+    [+] upload actually succeeded — found live (pk=4036150456329305523)
+[+] Published: 4036150456329305523
+[-] account_2: session kept for reuse (not invalidated)
 
 ================================================================
   ACCOUNT account_1 (xene_hotty)
 ================================================================
-[!] Could not identify the post just published — other accounts will build their own content.
 [+] account_1 completed (original).
 
 ================================================================
   ACCOUNT account_2 (panda_fcuk)
 ================================================================
-[!] account_2: no source post available — skipping.
+[+] account_2 completed (same content).
 
-Done. 1/2 account(s) succeeded.
+Done. 2/2 account(s) succeeded.
