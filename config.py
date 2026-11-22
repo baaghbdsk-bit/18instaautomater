@@ -151,9 +151,11 @@ PERCHANCE_NEGATIVE = os.getenv(
     "PERCHANCE_NEGATIVE",
     "nudity, nipples, areola, genitalia, pubic hair, explicit sexual activity, "
     "porn, minors, child, teenage, underage, skinny, slim, thin body, anorexic, "
-    "different face, different-looking character, face change, distorted face, "
-    "deformed hands, extra fingers, duplicated limbs, text, watermark, logo, "
-    "low quality, blurry, artifacts",
+    "flat chest, small bust, petite, toned abs, fat, flabby, obese, protruding "
+    "belly, big stomach, sagging belly, different face, different-looking "
+    "character, face change, distorted facial features, deformed hands, extra "
+    "fingers, duplicated limbs, visible text, watermark, logo, low quality, "
+    "blurry, cartoon, illustration",
 )
 
 # ---------------------------------------------------------------------------

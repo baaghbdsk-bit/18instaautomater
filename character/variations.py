@@ -26,23 +26,44 @@ DIMENSIONS = (
 # Quality constraints appended to every prompt. "adult subject" and the
 # non-explicit/no-nudity clauses are deliberate platform-safety guardrails.
 QUALITY_CONSTRAINTS = (
-    "realistic anatomy, natural hands and fingers, identical consistent facial "
-    "features as described, natural curvy body proportions, high-quality "
-    "photographic appearance, sharp detailed face, no distorted face, no "
-    "duplicated limbs, no text watermark logo, adult subject 25yo, teasing "
-    "non-nude, no nipples no areola no genitalia no pubic hair, no explicit "
-    "sexual activity"
+    "identical consistent facial features, sharp detailed face, adult 25yo, "
+    "teasing non-nude, no nipples no areola no genitalia, fit toned healthy "
+    "glow, photoreal skin, no distorted features, no duplicated limbs, no "
+    "text watermark logo"
 )
 
-# Allure emphasis block — appended after scene details in every prompt.
-# Forces revealing, body-showing, lust-appealing output without nudity.
-ALLURE_BLOCK = (
-    "Allure emphasis: ultra-sexy revealing body-hugging outfit, short length, "
-    "deep neckline with cleavage, bare shoulders and midriff and thighs on "
-    "show, curvy body fully visible, seductive pose with hips tilted and "
-    "chest pushed forward, direct lustful eye contact, glossy parted lips, "
-    "teasing playful lustful mood, Instagram baddie reel aesthetic, "
-    "photoreal skin texture, sharp focus on face and body"
+# Allure emphasis V2 — body shape rules from the owner. Every prompt must
+# carry the flat-but-tucked waist AND thick curves so neither "skinny model"
+# nor "fat belly" drift is possible.
+ALLURE_V2 = (
+    "Allure emphasis V2: ultra-sexy body-hugging revealing outfit, short "
+    "length, deep neckline with deep cleavage in lace, bare shoulders and "
+    "midriff and thighs on show, BIGGER full heavy bust, slim tucked flat fit "
+    "midriff and narrow waist, wide hips and thick thighs, rounded full lifted "
+    "butt, fit toned healthy glow, sunkissed skin, seductive pose with hips "
+    "cocked and chest forward and back slightly arched, one hand on body, "
+    "glossy parted lips, lustful eye contact into lens, teasing provocative "
+    "mood, Instagram baddie reel aesthetic, sharp focus on face and body, "
+    "NOT skinny, NOT fat, NO protruding belly"
+)
+
+# Backwards-compatible name for older callers.
+ALLURE_BLOCK = ALLURE_V2
+
+# Naughty action bank — a different tease action is injected into every pose,
+# so no variation collapses into a plain standing shot.
+NAUGHTY_ACTIONS = (
+    "grabbing her bust over the lace with one hand",
+    "slowly slipping one strap off her shoulder",
+    "hand buried in her hair with her back arched",
+    "looking back over her shoulder with hips pushed back",
+    "sitting on the edge of the bed leaning forward toward the camera",
+)
+
+POSE_ENFORCEMENT = (
+    "Pose rule: hips cocked, chest pushed forward, back slightly arched, one "
+    "hand on her body, lips parted, lustful eye contact into the lens. Never "
+    "standing straight, never arms crossed, never blank stare."
 )
 
 
@@ -83,7 +104,7 @@ VARIATIONS = [
     Variation(
         key="neon_night_street",
         outfit="thin-strap black satin mini slip dress with a cropped leather jacket left open",
-        pose="standing against a wall, hip tilted out, one hand relaxed in her pocket",
+        pose="leaning against a wall, hip cocked out, chest forward, one hand on her hip",
         expression="confident seductive smirk",
         gaze="looking slightly past the camera",
         camera_angle="low three-quarter angle",
@@ -98,9 +119,9 @@ VARIATIONS = [
     Variation(
         key="golden_hour_beach",
         outfit="high-cut coral bikini with tie-side bottoms",
-        pose="standing with hips tilted, one hand on her hip, the other brushing her hair",
+        pose="hip cocked, shoulders back, one hand on her hip, the other brushing her hair",
         expression="seductive playful smile",
-        gaze="looking toward the horizon",
+        gaze="lustful eye contact into the lens",
         camera_angle="eye-level candid angle",
         camera_distance="medium-wide shot",
         lighting="warm golden hour backlight",
@@ -113,7 +134,7 @@ VARIATIONS = [
     Variation(
         key="studio_fashion_editorial",
         outfit="black satin mini slip dress with thin straps and a plunging neckline",
-        pose="standing tall, shoulders back, hips pushed forward, one hand on her hip",
+        pose="hips cocked and pushed forward, back arched, one hand on her hip",
         expression="fierce seductive gaze",
         gaze="direct intense eye contact",
         camera_angle="straight-on eye-level angle",
@@ -173,9 +194,9 @@ VARIATIONS = [
     Variation(
         key="rainy_window_moody",
         outfit="soft grey cashmere cardigan over a simple dress",
-        pose="standing beside a rain-streaked window, arms folded",
-        expression="thoughtful wistful expression",
-        gaze="looking out at the rain",
+        pose="leaning beside a rain-streaked window, hip cocked, one hand on her waist",
+        expression="lustful parted-lip expression",
+        gaze="lustful eye contact into the lens",
         camera_angle="side three-quarter angle",
         camera_distance="medium shot",
         lighting="cool grey diffused daylight",
@@ -190,7 +211,7 @@ VARIATIONS = [
         outfit="black lace lingerie set with a satin robe draped open",
         pose="seated at a vanity mirror, arched back slightly, one hand on her hip",
         expression="soft seductive smile",
-        gaze="meeting her reflection's gaze",
+        gaze="lustful eye contact into the lens",
         camera_angle="over-the-shoulder angle",
         camera_distance="medium close-up",
         lighting="warm vanity bulb glow",
@@ -233,7 +254,7 @@ VARIATIONS = [
     Variation(
         key="streetwear_golden",
         outfit="cropped streetwear jacket over a fitted tank top and high-waisted trousers",
-        pose="leaning casually against a graffiti wall, arms crossed",
+        pose="leaning against a graffiti wall, hip cocked, one hand gripping her own waist",
         expression="cool confident smirk",
         gaze="looking directly at the camera",
         camera_angle="eye-level street angle",
@@ -311,10 +332,12 @@ def build_prompt(profile: CharacterProfile, variation: Variation,
             variation.mood,
         ]
     )
+    action = NAUGHTY_ACTIONS[VARIATION_KEYS.index(variation.key) % len(NAUGHTY_ACTIONS)]
     parts = [
         profile.identity_prompt(),
         "Scene details: " + scene,
-        ALLURE_BLOCK,
+        f"Tease action: {action}. " + POSE_ENFORCEMENT,
+        ALLURE_V2,
         "Quality constraints: " + QUALITY_CONSTRAINTS,
     ]
     if extra and extra.strip():

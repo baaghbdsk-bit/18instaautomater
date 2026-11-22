@@ -10,9 +10,12 @@ from character.consistency import (
     build_consistency,
     consistency_metadata,
 )
-from character.profile import MASTER_PROFILE
+from character.profile import DEFAULT_NEGATIVE_PROMPT, MASTER_PROFILE
 from character.variations import (
+    ALLURE_V2,
     DIMENSIONS,
+    NAUGHTY_ACTIONS,
+    POSE_ENFORCEMENT,
     QUALITY_CONSTRAINTS,
     VARIATIONS,
     build_prompt,
@@ -20,13 +23,16 @@ from character.variations import (
     select_variation,
     variation_keys,
 )
+from config import PERCHANCE_NEGATIVE
 
 
 def test_identity_prompt_stability():
     assert MASTER_PROFILE.identity_prompt() == MASTER_PROFILE.fixed_identity
     assert MASTER_PROFILE.identity_prompt() == MASTER_PROFILE.identity_prompt()
-    assert "South Asian Indian" in MASTER_PROFILE.identity_prompt()
-    assert "full-figured thick curvy hourglass body" in MASTER_PROFILE.identity_prompt()
+    assert "South Asian Indian appearance" in MASTER_PROFILE.identity_prompt()
+    assert "healthy fit thick curvy hourglass" in MASTER_PROFILE.identity_prompt()
+    assert "SAME FACE IN EVERY IMAGE" in MASTER_PROFILE.identity_prompt()
+    assert "small dark mole below left corner of lips" in MASTER_PROFILE.identity_prompt()
 
 
 def test_all_variations_have_required_dimension_keys():
@@ -76,10 +82,47 @@ def test_nonexplicit_constraint_present():
     prompt = build_prompt(MASTER_PROFILE, VARIATIONS[0])
     assert "NO NUDITY" in prompt
     assert "non-nude" in prompt
-    assert "no explicit sexual activity" in prompt
-    assert "adult subject" in prompt
+    assert "no nipples no areola no genitalia" in prompt
+    assert "adult 25yo" in prompt
     assert "nudity" in MASTER_PROFILE.negative_prompt_text()
     assert "no text watermark logo" in QUALITY_CONSTRAINTS
+
+
+def test_negatives_identical_and_never_ban_allure_words():
+    assert PERCHANCE_NEGATIVE == DEFAULT_NEGATIVE_PROMPT
+    for banned_from_negative in ("skinny", "slim", "flat chest", "small bust",
+                                 "fat", "flabby", "protruding belly", "sagging belly"):
+        assert banned_from_negative in PERCHANCE_NEGATIVE
+    for required in ("cleavage", "lingerie", "sexy", "seductive", "curvy", "thick", "fit"):
+        assert required not in PERCHANCE_NEGATIVE
+
+
+def test_allure_v2_body_rules_present_in_every_prompt():
+    must_have = ("BIGGER full heavy bust", "slim tucked flat fit midriff",
+                 "narrow waist", "wide hips and thick thighs", "fit toned healthy glow")
+    for phrase in must_have:
+        assert phrase in ALLURE_V2
+    for banned in ("soft belly", "small waist"):
+        assert banned not in ALLURE_V2
+    assert "NO protruding belly" in ALLURE_V2
+    for variation in VARIATIONS:
+        prompt = build_prompt(MASTER_PROFILE, variation)
+        for phrase in must_have:
+            assert phrase in prompt
+        assert "soft belly" not in prompt
+
+
+def test_naughty_actions_injected_and_boring_poses_banned():
+    assert len(NAUGHTY_ACTIONS) == 5
+    assert "never arms crossed" in POSE_ENFORCEMENT.lower()
+    assert "never blank stare" in POSE_ENFORCEMENT.lower()
+    seen = set()
+    for variation in VARIATIONS:
+        prompt = build_prompt(MASTER_PROFILE, variation)
+        assert any(action in prompt for action in NAUGHTY_ACTIONS)
+        seen.update(a for a in NAUGHTY_ACTIONS if a in prompt)
+        assert "Tease action:" in prompt
+    assert len(seen) >= 4
 
 
 def test_select_variation_prefers_unused():
