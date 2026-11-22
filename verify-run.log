@@ -4,35 +4,35 @@ Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/xen
 Status 404: Endpoint /v1/qe/expose/ does not exist
 [+] account_1: restored session (xene_hotty)
 [*] Account : account_1 (xene_hotty)
-[*] Quote   : There's a very mischievous woman hiding behind this pretty smile.  [u018]
-[*] Variation: silk_robe_bedroom / character meera-v1
+[*] Quote   : I enjoy making people wonder whether I'm sweet or simply very good at pretending.  [u019]
+[*] Variation: cafe_window_candid / character meera-v1
 [*] Prompt  : Fictional adult woman, age 25, South Asian Indian, 165cm, fair-medium luminous skin, long voluminous wavy dark chocolate-brown hair with center part, round full-cheeked soft oval f...
 [*] Provider: perchance
-[*] Raw image: /home/runner/work/18instaautomater/18instaautomater/assets/images/perchance_20261122_070631_834465_cb26c8.jpg
-[+] Valid image: 1080x1920, 0.4 MB
-[+] Valid reel: 12.0s, 2.3 MB
+[*] Raw image: /home/runner/work/18instaautomater/18instaautomater/assets/images/perchance_20261122_072642_901581_3d785d.jpg
+[+] Valid image: 1080x1920, 0.5 MB
+[+] Valid reel: 12.0s, 2.9 MB
 [music] ORGAVSM 'touch_my_body' not resolvable via search_music()
 [music] ORGAVSM 'your_kind_of_love' not resolvable via search_music()
 [music] ORGAVSM 'in_your_fantasy' not resolvable via search_music()
 [music] no ORGAVSM track available — posting without audio
-Analyzing CLIP file "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_070631.mp4"
-Generating thumbnail "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_070631.mp4.jpg"...
+Analyzing CLIP file "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_072643.mp4"
+Generating thumbnail "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_072643.mp4.jpg"...
     [!] reel upload attempt 1/3 failed: 404 Client Error: Not Found for url: https://i.instagram.com/api/v1/qe/expose/
-    [+] upload actually succeeded — found live (pk=4035853377478503198)
-[+] Published: 4035853377478503198
+    [+] upload actually succeeded — found live (pk=4035863778865902432)
+[+] Published: 4035863778865902432
 [-] account_1: session kept for reuse (not invalidated)
 Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/panda_fcuk/?__a=1&__d=dis) >>> 
 Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/panda_fcuk/?__a=1&__d=dis) >>> 
 Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/panda_fcuk/?__a=1&__d=dis) >>> 
 Status 404: Endpoint /v1/qe/expose/ does not exist
-[*] Thumbnail: /home/runner/work/18instaautomater/18instaautomater/assets/final/compose_20261122_070631_920789_64e22d.jpg
+[*] Thumbnail: /home/runner/work/18instaautomater/18instaautomater/assets/final/compose_20261122_072643_051637_e050f7.jpg
 [+] account_2: restored session (panda_fcuk)
-[*] Repost to account_2 (panda_fcuk): post #29 -> #30
-Analyzing CLIP file "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_070631.mp4"
-Generating thumbnail "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_070631.mp4.jpg"...
+[*] Repost to account_2 (panda_fcuk): post #31 -> #32
+Analyzing CLIP file "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_072643.mp4"
+Generating thumbnail "/home/runner/work/18instaautomater/18instaautomater/assets/output/reel_20261122_072643.mp4.jpg"...
     [!] reel upload attempt 1/3 failed: 404 Client Error: Not Found for url: https://i.instagram.com/api/v1/qe/expose/
-    [+] upload actually succeeded — found live (pk=4035856523841897290)
-[+] Published: 4035856523841897290
+    [+] upload actually succeeded — found live (pk=4035867258265352180)
+[+] Published: 4035867258265352180
 [-] account_2: session kept for reuse (not invalidated)
 
 ================================================================
