@@ -344,7 +344,8 @@ def test_pick_music_track_prefers_unused_orgavsm_track():
     client = MagicMock()
     tracks = [
         SimpleNamespace(id=item["track_id"], title=item["title"],
-                        display_artist="ORGAVSM")
+                        display_artist="ORGAVSM",
+                        progressive_download_url="http://audio")
         for item in music_match.CURATED_TRACKS.values()
     ]
     client.search_music.return_value = tracks

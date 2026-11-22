@@ -24,11 +24,13 @@ def test_no_slowburn_tracks_remain():
 
 def test_find_track_uses_search_music_only():
     item = music_match.CURATED_TRACKS["naughty"]
-    fake = SimpleNamespace(id=item["track_id"], title="Naughty")
+    fake = SimpleNamespace(id=item["track_id"], title="Naughty",
+                           display_artist="ORGAVSM",
+                           progressive_download_url="http://audio")
     client = MagicMock()
     client.search_music.return_value = [fake]
     assert music_match.find_curated_track(client, item) is fake
-    client.search_music.assert_called_with("orgavsm")
+    assert any(c.args[0] == "orgavsm" for c in client.search_music.call_args_list)
 
 
 def test_cooldown_is_persisted_in_db(monkeypatch):
@@ -46,8 +48,12 @@ def test_pick_logs_audio_id_and_rotates():
         db.set_state(f"orgavsm_last_used:{key}", "0")
     first = music_match.CURATED_TRACKS["touch_my_body"]
     second = music_match.CURATED_TRACKS["naughty"]
-    a = SimpleNamespace(id=first["track_id"], title="Touch my body")
-    b = SimpleNamespace(id=second["track_id"], title="Naughty")
+    a = SimpleNamespace(id=first["track_id"], title="Touch my body",
+                        display_artist="ORGAVSM",
+                        progressive_download_url="http://audio")
+    b = SimpleNamespace(id=second["track_id"], title="Naughty",
+                        display_artist="ORGAVSM",
+                        progressive_download_url="http://audio")
     client = MagicMock()
     client.search_music.return_value = [a, b]
 

@@ -25,4 +25,4 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/actions/workflows/post.yml/dispatches" \
             -d '{"ref":"main","inputs":{"slot":"verify-music-image"}}'
           echo dispatched
-          # touch-for-retry (2)
+          # touch-for-retry (3 - catalog fallback fix)
