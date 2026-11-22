@@ -1,0 +1,20 @@
+Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/xene_hotty/?__a=1&__d=dis) >>> 
+Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/xene_hotty/?__a=1&__d=dis) >>> 
+Status 201: JSONDecodeError in public_request (url=https://www.instagram.com/xene_hotty/?__a=1&__d=dis) >>> 
+[+] account_1: restored session (xene_hotty)
+[*] Account : account_1 (xene_hotty)
+[=] account_1: last publish 81.8 min ago (min gap 150) — skipping
+[-] account_1: session kept for reuse (not invalidated)
+
+================================================================
+  ACCOUNT account_1 (xene_hotty)
+================================================================
+[!] Could not identify the post just published — other accounts will build their own content.
+[+] account_1 completed (original).
+
+================================================================
+  ACCOUNT account_2 (panda_fcuk)
+================================================================
+[!] account_2: no source post available — skipping.
+
+Done. 1/2 account(s) succeeded.
