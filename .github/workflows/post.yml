@@ -2,9 +2,11 @@ name: Scheduled quote post
 
 on:
   schedule:
-    # 6 slots/day (every 4 hours) at :23 — GitHub cron is best-effort
+    # 8 slots/day (every 3 hours IST) — GitHub cron is best-effort
+    # IST = UTC+5:30. Slots: 12am,3am,6am,9am,12pm,3pm,6pm,9pm IST
+    # = 18:30,21:30,00:30,03:30,06:30,09:30,12:30,15:30 UTC
     # (expect 5-30 min drift); cadence guards make drift harmless.
-    - cron: "23 */4 * * *"
+    - cron: "30 18,21,0,3,6,9,12,15 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -128,7 +130,7 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
           NOTIFY_WEBHOOK_URL: ${{ secrets.NOTIFY_WEBHOOK_URL }}
-          MIN_GAP_MINUTES: ${{ vars.MIN_GAP_MINUTES || '0' }}
+          MIN_GAP_MINUTES: ${{ vars.MIN_GAP_MINUTES || '150' }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
           IMAGE_PROVIDER: ${{ vars.IMAGE_PROVIDER || 'perchance' }}
           PERCHANCE_URL: ${{ vars.PERCHANCE_URL || 'http://127.0.0.1:8000' }}

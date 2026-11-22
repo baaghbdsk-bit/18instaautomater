@@ -53,12 +53,12 @@ def test_ass_color_conversion():
 
 def test_build_ass_structure():
     q = layout("Bet you can't look away from this one")
-    ass = build_ass(q, 1080, 1920, 12.0, "upper", "@xene.ai")
+    ass = build_ass(q, 1080, 1920, 12.0, "upper", "@xene_hotty")
     assert "PlayResX: 1080" in ass
     assert "PlayResY: 1920" in ass
     assert "Style: Quote,Anton," in ass
-    assert "Style: Mark,Archivo Black,38," in ass
-    assert "@xene.ai" in ass
+    assert "Style: Mark,Archivo Black,24," in ass
+    assert "@xene_hotty" in ass
     assert ass.count("Dialogue:") == len(q["lines"]) + 1   # lines + watermark
     # events reference the Quote style, not an unknown one
     assert ",Quote,,0,0,0,," in ass
@@ -66,11 +66,11 @@ def test_build_ass_structure():
 
 def test_handle_is_at_bottom_not_on_the_face():
     q = {"size": 96, "lines": ["Line one", "Line two"]}
-    ass = build_ass(q, 1080, 1920, 12.0, "lower", "@xene.ai")
+    ass = build_ass(q, 1080, 1920, 12.0, "lower", "@xene_hotty")
     mark = next(l for l in ass.splitlines() if l.startswith("Style: Mark,"))
-    # alignment 2 = bottom-centre (8 used to be top-centre over the forehead)
-    assert ",2,88,88,90,1" in mark
-    assert "\\an2\\fad(300,0)" in ass
+    # alignment 3 = bottom-right (8 used to be top-centre over the forehead)
+    assert ",3,88,88,90,1" in mark
+    assert "\\an3\\fad(300,0)" in ass
     assert "\\an8" not in ass
 
 

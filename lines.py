@@ -396,10 +396,16 @@ def compose(theme: str, mood: str, allow_generate: bool = True) -> tuple:
 # ---------------------------------------------------------------------------
 # captions
 # ---------------------------------------------------------------------------
-def clean_hashtags(tags: List[str], limit: int = 12) -> List[str]:
+# Banned hashtags — never appear in visible caption set.
+BANNED_HASHTAGS = {"#aiart", "#stablediffusion", "#synthetic", "#aigirl",
+                   "#ai", "#generated", "#midjourney"}
+
+def clean_hashtags(tags: List[str], limit: int = 3) -> List[str]:
     out, seen = [], set()
     for t in tags:
         t = (t or "").strip().lower()
+        if not t or t in BANNED_HASHTAGS:
+            continue
         if not re.fullmatch(r"#[a-z0-9_]{2,28}", t):
             continue
         if t in seen:
@@ -413,32 +419,40 @@ def clean_hashtags(tags: List[str], limit: int = 12) -> List[str]:
 
 def fallback_hashtags(mood: str) -> List[str]:
     base = HASHTAGS.get(mood, HASHTAGS["flirty"])
-    extra = ["#reels", "#explore", "#fyp", "#viral", "#aiart",
-             "#model", "#trending", "#instaviral", "#beautiful"]
-    return clean_hashtags(base + random.sample(extra, 4))
+    # Only 3 hashtags: 1 niche + 1 indian + 1 broad.
+    niche = base[0] if base else "#glamour"
+    indian = "#indiangirl"
+    broad = "#reels"
+    return clean_hashtags([niche, indian, broad])
 
 
 def build_caption(theme: str, mood: str, line: str,
                   credit: str = "") -> str:
-    """line / hook / hashtags / music credit — hard-capped at 2200 chars."""
+    """Line1: Hinglish hook question. Line2: CTA. 3 hashtags only."""
     hook, tags = None, None
     if LLM_API_KEY:
         prompt = (
-            "Write the caption body and hashtags for an Instagram reel. "
+            "Write an Instagram reel caption in Hinglish (Hindi + English mix). "
             "The overlay quote on the video is: \"{line}\". "
             "Niche: {niche}. Theme: {theme}. "
-            "RULES: caption body under 140 characters, flirty/confident tone, "
-            "must NOT repeat the quote, at most one call-to-action, at most one "
-            "emoji. Hashtags: exactly 9, mix of broad and niche, lowercase, "
-            "no banned-tag spam. "
-            "Return ONLY JSON: {{\"hook\": \"...\", \"hashtags\": "
-            "[\"#tag\", \"...\"]}}"
+            "RULES: Line 1 is a short hook question (under 60 chars). "
+            "Line 2 is one CTA (under 60 chars). Hashtags: exactly 3, "
+            "one niche, one indian, one broad, lowercase. "
+            "NEVER use #aiart #stablediffusion #synthetic #aigirl. "
+            "Return ONLY JSON: {{\"hook\": \"...\", \"cta\": \"...\", "
+            "\"hashtags\": [\"#tag\", \"#tag\", \"#tag\"]}}"
         ).format(line=line, niche=CONTENT_NICHE, theme=theme)
         obj = chat_json(prompt, temperature=0.9)
         if obj:
             h = obj.get("hook")
             if isinstance(h, str) and 0 < len(h.strip()) <= 200:
                 hook = " ".join(strip_emoji(h).split())
+            c = obj.get("cta")
+            if isinstance(c, str) and 0 < len(c.strip()) <= 200:
+                if hook:
+                    hook = hook + " " + c
+                else:
+                    hook = c
             t = obj.get("hashtags")
             if isinstance(t, list):
                 tags = clean_hashtags([x for x in t if isinstance(x, str)])
@@ -448,10 +462,15 @@ def build_caption(theme: str, mood: str, line: str,
     if not tags:
         tags = fallback_hashtags(mood)
 
-    parts = [line, hook, " ".join(tags)]
+    # Build: Line (quote) + Hook/CTA line + 3 hashtags
+    parts = [line]
+    if hook:
+        parts.append(hook)
+    if tags:
+        parts.append(" ".join(tags))
     if credit:
         parts.append(credit)
-    caption = "\n\n".join(p for p in parts if p)
+    caption = "\n".join(p for p in parts if p)
     caption = re.sub(r"\n{3,}", "\n\n", caption)
     # LLM responses occasionally carry U+FFFD (a byte lost on the wire). In an
     # English caption it is nearly always a mangled apostrophe, and Instagram

@@ -33,7 +33,11 @@ from config import (
     MUSIC_TRENDING_PRODUCT,
     SESSIONS_DIR,
 )
-from music_match import curated_for_mood, find_curated_track, track_key
+from music_match import (
+    find_curated_track,
+    pick_orgavsm_track,
+    track_key,
+)
 from net import with_retry
 
 SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
@@ -495,17 +499,8 @@ def find_trending_tracks(cl, source: str | None = None, limit: int | None = None
 
 def pick_music_track(cl, used_keys: list | None = None,
                      mood: str | None = None):
-    """Pick a SLOWBURN catalog track for the mood. No generic fallback."""
-    used = set(used_keys or [])
-    for item in curated_for_mood(mood):
-        if item["track_id"] in used:
-            continue
-        track = find_curated_track(cl, item)
-        if track is not None:
-            print(f"[music] SLOWBURN '{item['title']}' for mood={mood!r}")
-            return track, track_key(track)
-    print("[music] no SLOWBURN track available — posting without music")
-    return None, None
+    """Backward-compatible alias: ORGAVSM-only catalog picker."""
+    return pick_orgavsm_track(cl, used_keys=used_keys, mood=mood)
 
 
 def session_status(account) -> dict:

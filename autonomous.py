@@ -25,9 +25,8 @@ from pathlib import Path
 PYTHON_EXE = sys.executable
 MAIN_SCRIPT = Path(__file__).resolve().parent / "main.py"
 
-# Long break between cycles (seconds)
-CYCLE_BREAK_MIN = 2 * 60 * 60   # 2 hours
-CYCLE_BREAK_MAX = 4 * 60 * 60   # 4 hours
+# Fixed 3-hour break between cycles (8 slots/day)
+CYCLE_BREAK_SECONDS = 3 * 60 * 60   # 3 hours
 
 # If a cycle fails hard, wait this long before retrying
 ERROR_RETRY_MIN = 30 * 60       # 30 min
@@ -71,7 +70,7 @@ def main():
             ok = False
 
         if ok:
-            sleep_for = random.randint(CYCLE_BREAK_MIN, CYCLE_BREAK_MAX)
+            sleep_for = CYCLE_BREAK_SECONDS
         else:
             sleep_for = random.randint(ERROR_RETRY_MIN, ERROR_RETRY_MAX)
 

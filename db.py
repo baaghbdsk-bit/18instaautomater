@@ -231,17 +231,21 @@ def count_published_today(account: str) -> int:
     return int(row["n"])
 
 
-def last_published_at() -> Optional[str]:
+def last_published_at(account: Optional[str] = None) -> Optional[str]:
+    sql = ("SELECT MAX(COALESCE(published_at, created_at)) AS t "
+           "FROM posts WHERE status='published'")
+    params: tuple = ()
+    if account:
+        sql += " AND account=?"
+        params = (account,)
     conn = connect()
-    row = conn.execute(
-        "SELECT MAX(COALESCE(published_at, created_at)) AS t "
-        "FROM posts WHERE status='published'").fetchone()
+    row = conn.execute(sql, params).fetchone()
     conn.close()
     return row["t"] if row and row["t"] else None
 
 
-def minutes_since_last_publish() -> float:
-    last = last_published_at()
+def minutes_since_last_publish(account: Optional[str] = None) -> float:
+    last = last_published_at(account)
     if not last:
         return float("inf")
     try:

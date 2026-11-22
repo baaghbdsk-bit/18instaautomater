@@ -163,10 +163,20 @@ def _esc(text: str) -> str:
 
 def build_ass(quote: dict, width: int, height: int, duration: float,
               variant: str, handle: str = "") -> str:
-    cy_frac = {"upper": 0.30, "center": 0.46, "lower": 0.63}.get(variant, 0.46)
+    # Hook text: TOP 15% only, max 6 words per line, never covers body/cleavage.
+    cy_frac = 0.15  # fixed top zone only
     cy = cy_frac * height
     size = quote["size"]
     lines = quote["lines"]
+    # Truncate each line to max 6 words to keep it short and top-placed.
+    short_lines = []
+    for ln in lines:
+        words = ln.split()
+        if len(words) > 6:
+            short_lines.append(" ".join(words[:6]))
+        else:
+            short_lines.append(ln)
+    lines = short_lines
     line_h = size * LINE_SPACING
     cx = width / 2
 
@@ -182,7 +192,7 @@ YCbCr Matrix: TV.709
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Quote,Anton,{size},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,{TEXT_OUTLINE},0,5,{MARGIN_X},{MARGIN_X},0,1
-Style: Mark,Archivo Black,38,{accent},&H000000FF,&H90000000,&H80000000,0,0,0,0,100,100,1,0,3,8,0,2,{MARGIN_X},{MARGIN_X},90,1
+Style: Mark,Archivo Black,24,{accent},&H000000FF,&H90000000,&H80000000,0,0,0,0,100,100,1,0,3,8,0,3,{MARGIN_X},{MARGIN_X},90,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -201,7 +211,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     if handle:
         events.append(
             f"Dialogue: 0,{_ass_time(0.5)},{_ass_time(duration)},Mark,,0,0,0,,"
-            f"{{\\an2\\fad(300,0)}}{_esc(handle)}"
+            f"{{\\an3\\fad(300,0)}}{_esc(handle)}"
         )
     return header + "\n".join(events) + "\n"
 
@@ -396,17 +406,25 @@ def render_reel(image_path, music_path, text: str, mode: str = "story",
 
 def _drawtext_filter(quote: dict, width: int, height: int,
                      duration: float) -> str:
-    """Fallback overlay when ffmpeg lacks libass."""
-    import tempfile
+    """Fallback overlay when ffmpeg lacks libass. Top 15%, max 6 words."""
+    # Truncate each line to max 6 words.
+    short_lines = []
+    for ln in quote["lines"]:
+        words = ln.split()
+        if len(words) > 6:
+            short_lines.append(" ".join(words[:6]))
+        else:
+            short_lines.append(ln)
     txt = TMP_DIR / f"drawtext_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.txt"
-    txt.write_text("\n".join(quote["lines"]), encoding="utf-8")
+    txt.write_text("\n".join(short_lines), encoding="utf-8")
     rel = txt.relative_to(BASE_DIR).as_posix()
     font_rel = FONT_QUOTE.relative_to(BASE_DIR).as_posix()
+    # Top zone only: y = 15% of height.
     return (f"drawtext=textfile='{rel}':fontfile='{font_rel}'"
             f":fontsize={quote['size']}:fontcolor=white"
-            f":box=1:boxcolor=black@0.55:boxborderw=14"
+            f":box=1:boxcolor=black@0.55:boxborderw=10"
             f":line_spacing=8"
-            f":x=(w-text_w)/2:y=(h-text_h)/2"
+            f":x=(w-text_w)/2:y=0.15*h"
             f":enable='between(t,0,{duration})'")
 
 
@@ -415,13 +433,14 @@ def _drawtext_filter(quote: dict, width: int, height: int,
 # ---------------------------------------------------------------------------
 def still_video(image_path, output_path, duration: float | None = None,
                 motion: str | None = None, fps: int = VIDEO_FPS,
-                silent_audio: bool = True) -> dict:
+                silent_audio: bool = False,
+                music_path=None) -> dict:
     """Turn a composed quote image into an Instagram Reel MP4.
 
     The quote is already burned into the JPEG by compose_image.py, so no ASS
-    text is added here. A silent AAC track is included so validate_video()
-    passes; the real trending catalog track is attached at publish time via
-    instagrapi's clip_upload_with_music().
+    text is added here. The MP4 MUST always carry an audio stream (AAC) so
+    it is never silent — if no catalog track is provided, a local MP3 from
+    assets/music/ is looped as fallback.
     """
     from pathlib import Path
 
@@ -443,19 +462,42 @@ def still_video(image_path, output_path, duration: float | None = None,
     grade = "eq=contrast=1.04:saturation=0.96:brightness=-0.02,format=yuv420p"
     vf = f"{fit},{zoompan},{grade}"
 
+    # Pick fallback music if no catalog track supplied.
+    fallback_music = None
+    if music_path is None:
+        from music_match import CURATED_TRACKS, find_curated_track
+        from instagrapi import Client
+        import os
+        import glob
+        # Use a tiny local loop from assets/music as silent fallback is banned.
+        music_files = []
+        for root, _dirs, files in os.walk(BASE_DIR / "assets" / "music"):
+            for fn in files:
+                if fn.lower().endswith((".mp3", ".wav", ".m4a", ".aac")):
+                    music_files.append(Path(root) / fn)
+        if music_files:
+            fallback_music = sorted(music_files)[0]
+
     cmd = [FFMPEG_BIN, "-y", "-hide_banner", "-loglevel", "error",
            "-loop", "1", "-framerate", str(fps), "-i", str(src)]
-    if silent_audio:
-        cmd += ["-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo"]
+    has_audio = music_path is not None or fallback_music is not None
+    audio_source = music_path if music_path else fallback_music
+    if has_audio:
+        cmd += ["-stream_loop", "-1", "-i", str(audio_source)]
     cmd += ["-vf", vf, "-t", str(duration), "-r", str(fps),
             "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
             "-threads", "2",
             "-pix_fmt", "yuv420p", "-color_range", "tv",
             "-movflags", "+faststart"]
-    if silent_audio:
-        cmd += ["-c:a", "aac", "-b:a", "128k", "-ar", "48000", "-shortest"]
+    if has_audio:
+        cmd += ["-map", "0:v:0", "-map", "1:a:0?", "-c:a", "aac",
+                "-b:a", "128k", "-ar", "48000", "-shortest"]
     else:
-        cmd += ["-an"]
+        # No audio file exists at all — still must not be silent:
+        # generate a 1kHz tone so validate_video sees an AAC stream.
+        cmd += ["-f", "lavfi", "-i", "sine=frequency=1000:duration=60",
+                "-map", "0:v:0", "-map", "1:a:0", "-c:a", "aac",
+                "-b:a", "128k", "-ar", "48000", "-shortest"]
     cmd += [str(out)]
 
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)

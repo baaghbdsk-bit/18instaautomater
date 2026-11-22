@@ -53,7 +53,7 @@ ACCOUNTS = [
         "username": os.getenv("IG_USERNAME_1", ""),
         "password": os.getenv("IG_PASSWORD_1", ""),
         "two_factor_secret": os.getenv("IG_2FA_SECRET_1", ""),
-        "handle": os.getenv("IG_HANDLE_1") or "@xene.ai",
+        "handle": os.getenv("IG_HANDLE_1") or "@xene_hotty",
     },
     {
         "name": "account_2",
@@ -65,20 +65,19 @@ ACCOUNTS = [
 ]
 
 # Public watermark handle drawn on every reel ("" disables it).
-CHANNEL_HANDLE = os.getenv("IG_HANDLE_1") or "@xene.ai"
+CHANNEL_HANDLE = os.getenv("IG_HANDLE_1") or "@xene_hotty"
 
 # ---------------------------------------------------------------------------
 # Schedule / cadence guards
 # ---------------------------------------------------------------------------
 # Minimum minutes between two publishes (any account).
-MIN_GAP_MINUTES = int(os.getenv("MIN_GAP_MINUTES", "0"))
+MIN_GAP_MINUTES = int(os.getenv("MIN_GAP_MINUTES", "150"))
 # Per-UTC-day publish cap per account.
-# Owner removed the daily cap: 0 means unlimited publishes per account.
-DAILY_CAP_PER_ACCOUNT = 0
-# Local multi-post mode (main.py) pacing.
+DAILY_CAP_PER_ACCOUNT = int(os.getenv("DAILY_CAP_PER_ACCOUNT", "8"))
+# Local multi-post mode (main.py) pacing — one post per slot only.
 POST_INTERVAL_MIN = int(os.getenv("POST_INTERVAL_MIN", "900"))
 POST_INTERVAL_MAX = int(os.getenv("POST_INTERVAL_MAX", "1800"))
-MAX_POSTS_PER_RUN = int(os.getenv("MAX_POSTS_PER_RUN", "6"))
+MAX_POSTS_PER_RUN = int(os.getenv("MAX_POSTS_PER_RUN", "1"))
 
 # ---------------------------------------------------------------------------
 # LLM (OpenAI-compatible endpoint — Gemini by default) for line generation

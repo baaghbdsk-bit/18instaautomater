@@ -52,9 +52,9 @@ def mux_track_audio(video_path, track, duration: float) -> dict:
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
     except OSError as e:
-        raise RuntimeError(f"ffmpeg could not mux audio: {e}") from e
+        raise RuntimeError(f"ffmpeg could not mux audio from {url}: {e}") from e
     if proc.returncode != 0 or not out.exists() or out.stat().st_size < 10000:
         raise RuntimeError(
-            f"audio mux failed (rc {proc.returncode}): "
-            f"{(proc.stderr or '')[-600:]}")
+            f"audio mux FATAL (rc {proc.returncode}) url={url}: "
+            f"{(proc.stderr or '')[-2000:]}")
     return {"path": str(out), "start_sec": start}

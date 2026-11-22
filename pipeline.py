@@ -59,6 +59,7 @@ from config import (
     FINAL_IMAGES_DIR,
     IMAGES_DIR,
     KILL_SWITCH,
+    MIN_GAP_MINUTES,
     MUSIC_CREDIT,
     MUSIC_ENABLED,
     OUTPUT_DIR,
@@ -71,13 +72,12 @@ from config import (
     TMP_DIR,
 )
 from audio_mux import mux_track_audio
-from music_match import track_from_metadata
+from music_match import track_from_metadata, pick_orgavsm_track
 from post_instagram import (
     find_duplicate,
     login_account,
     logout_all,
     media_info,
-    pick_music_track,
     recent_media,
     upload_photo_post,
     upload_reel,
@@ -196,7 +196,9 @@ def collect_insights(clients: dict, limit: int = 8,
                     continue
             except ValueError:
                 pass
-        cl = clients.get(post.get("account"))
+        # One process may only hold the current account's client; any
+        # authenticated client can read another account's public media.
+        cl = clients.get(post.get("account")) or next(iter(clients.values()), None)
         if not cl:
             continue
         info = media_info(cl, post["ig_id"])
@@ -406,6 +408,17 @@ def run_image(args) -> int:
                                "handle": ""})
         print(f"[*] Account : {account['name']} ({account['username']})")
 
+        # Burst guard: no second publish for the same account inside the
+        # configured gap (default 150 min), even across separate runs.
+        if (MIN_GAP_MINUTES and not dry and
+                db.minutes_since_last_publish(account["name"]) < MIN_GAP_MINUTES):
+            age = db.minutes_since_last_publish(account["name"])
+            print(f"[=] {account['name']}: last publish {age:.1f} min ago "
+                  f"(min gap {MIN_GAP_MINUTES}) — skipping")
+            outcome["status"] = "skipped"
+            finish("skipped", "min-gap")
+            return 0
+
         # 5. claim one unused approved line
         post_id = db.insert_post(
             account=account["name"], theme="image-post", title="",
@@ -486,13 +499,13 @@ def run_image(args) -> int:
         if args.mode == "reel":
             reel_path = OUTPUT_DIR / (
                 f"reel_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4")
-            # With a catalog track attached at publish time the MP4 must NOT
-            # contain a silent local audio stream: Instagram would play that
-            # instead of the licensed track, leaving the Reel effectively mute.
+            # The MP4 must always carry an AAC audio stream so it is never
+            # silent, whether or not a catalog track is available.
             reel = still_video(final_path, reel_path,
-                               silent_audio=not MUSIC_ENABLED)
+                               silent_audio=False,
+                               music_path=None)
             vok, vreasons, vinfo2 = validate_video(
-                reel["path"], require_audio=not MUSIC_ENABLED)
+                reel["path"], require_audio=True)
             if not vok:
                 raise RuntimeError("reel validation failed: " +
                                    ", ".join(vreasons))
@@ -531,11 +544,11 @@ def run_image(args) -> int:
             finish("skipped", "duplicate-caption")
             return 0
 
-        # 12b. optional Instagram catalog music (works on photo posts)
+        # 12b. optional Instagram catalog music — ORGAVSM Audio IDs only.
         track = None
         if MUSIC_ENABLED:
             used_music = [r["key"] for r in db.asset_usage("music")]
-            track, track_id = pick_music_track(
+            track, track_id = pick_orgavsm_track(
                 cl, used_keys=used_music,
                 mood=getattr(variation, "mood", None))
             if track_id:
@@ -561,29 +574,29 @@ def run_image(args) -> int:
 
         # 12b-2. Mux the same catalog audio into the MP4 so playback is
         # audible even when the client does not apply the catalog metadata.
+        # Mux is FATAL: a silent MP4 must never be uploaded.
         if track is not None and args.mode == "reel":
-            try:
-                muxed = mux_track_audio(publish_path, track,
-                                        float(reel["duration"]))
-                candidate = Path(muxed["path"])
-                vok2, vreasons2, _ = validate_video(candidate)
-                if not vok2:
-                    raise RuntimeError("muxed reel invalid: " +
-                                       ", ".join(vreasons2))
-                publish_path = candidate
-                db.update_post(post_id, video_path=str(publish_path))
-                print(f"[+] Reel audio muxed from "
-                      f"{(meta.get('music') or {}).get('title', 'catalog track')}")
-            except Exception as e:  # noqa: BLE001 - metadata path is a fallback
-                notes.append(f"audio mux skipped: {e}")
-                print(f"[!] Audio mux failed, keeping catalog metadata: {e}")
+            muxed = mux_track_audio(publish_path, track,
+                                    float(reel["duration"]))
+            candidate = Path(muxed["path"])
+            vok2, vreasons2, _ = validate_video(candidate)
+            if not vok2:
+                raise RuntimeError("muxed reel invalid: " +
+                                   ", ".join(vreasons2))
+            publish_path = candidate
+            db.update_post(post_id, video_path=str(publish_path))
+            print(f"[+] Reel audio muxed from "
+                  f"{(meta.get('music') or {}).get('title', 'catalog track')}")
 
-        # 12c. publish
+        # 12c. publish — pass a real JPG thumbnail (not the composed PNG).
+        thumb_path = final_path
+        if not thumb_path.suffix.lower() in (".jpg", ".jpeg"):
+            thumb_path = Path(str(thumb_path) + ".jpg")
         db.update_post(post_id, status="publishing")
         if args.mode == "reel":
             res = upload_reel_with_music(cl, account["username"], publish_path,
                                          caption, track=track,
-                                         thumbnail=str(final_path))
+                                         thumbnail=str(thumb_path))
         else:
             res = upload_photo_post(cl, account["username"], publish_path,
                                     caption, track=track)
@@ -620,6 +633,11 @@ def run_image(args) -> int:
         return 2 if (args.strict and "placeholder" in msg) else 1
     finally:
         if clients:
+            # Collect insights (views/likes/comments) before logging out.
+            try:
+                collect_insights(clients, limit=20, min_age_hours=0)
+            except Exception:  # noqa: BLE001 — insights are best-effort
+                pass
             logout_all(clients)
         report(outcome["status"], post_id, outcome["theme"], outcome["line"],
                outcome["info"], notes)
@@ -678,6 +696,14 @@ def run_repost(args) -> int:
         if not usable:
             raise RuntimeError("repost: no target account configured")
         account = usable[0]
+        if (MIN_GAP_MINUTES and
+                db.minutes_since_last_publish(account["name"]) < MIN_GAP_MINUTES):
+            age = db.minutes_since_last_publish(account["name"])
+            print(f"[=] {account['name']}: last publish {age:.1f} min ago "
+                  f"(min gap {MIN_GAP_MINUTES}) — repost skipped")
+            outcome["status"] = "skipped"
+            finish("skipped", "min-gap")
+            return 0
         if (DAILY_CAP_PER_ACCOUNT and
                 db.count_published_today(account["name"]) >= DAILY_CAP_PER_ACCOUNT):
             print(f"[=] {account['name']}: daily cap reached — repost skipped")
@@ -815,7 +841,7 @@ def run_reel(args) -> int:
             finish("skipped", "daily-cap")
             return 0
         account = account or {"name": "dry-run", "username": "(none)",
-                              "handle": "@xene.ai"}
+                              "handle": "@xene_hotty"}
         theme = choose_theme(args.theme)
         meta = theme_meta(theme)
         import lines as lines_mod
