@@ -29,10 +29,11 @@ from config import PERCHANCE_NEGATIVE
 def test_identity_prompt_stability():
     assert MASTER_PROFILE.identity_prompt() == MASTER_PROFILE.fixed_identity
     assert MASTER_PROFILE.identity_prompt() == MASTER_PROFILE.identity_prompt()
-    assert "South Asian Indian appearance" in MASTER_PROFILE.identity_prompt()
-    assert "healthy fit thick curvy hourglass" in MASTER_PROFILE.identity_prompt()
-    assert "SAME FACE IN EVERY IMAGE" in MASTER_PROFILE.identity_prompt()
-    assert "small dark mole below left corner of lips" in MASTER_PROFILE.identity_prompt()
+    assert "South Asian Indian" in MASTER_PROFILE.identity_prompt()
+    assert "DRY MATTE real human texture visible pores" in MASTER_PROFILE.identity_prompt()
+    assert "SAME FACE EVERY IMAGE" in MASTER_PROFILE.identity_prompt()
+    assert "small mole below left lip" in MASTER_PROFILE.identity_prompt()
+    assert "BIG full heavy DD bust" in MASTER_PROFILE.identity_prompt()
 
 
 def test_all_variations_have_required_dimension_keys():
@@ -90,16 +91,18 @@ def test_nonexplicit_constraint_present():
 
 def test_negatives_identical_and_never_ban_allure_words():
     assert PERCHANCE_NEGATIVE == DEFAULT_NEGATIVE_PROMPT
-    for banned_from_negative in ("skinny", "slim", "flat chest", "small bust",
-                                 "fat", "flabby", "protruding belly", "sagging belly"):
+    for banned_from_negative in ("skinny", "slim", "flat chest", "petite",
+                                 "fat", "flabby", "protruding belly", "big stomach",
+                                 "shiny skin", "plastic skin", "cartoon", "3d render"):
         assert banned_from_negative in PERCHANCE_NEGATIVE
     for required in ("cleavage", "lingerie", "sexy", "seductive", "curvy", "thick", "fit"):
         assert required not in PERCHANCE_NEGATIVE
 
 
 def test_allure_v2_body_rules_present_in_every_prompt():
-    must_have = ("BIGGER full heavy bust", "slim tucked flat fit midriff",
-                 "narrow waist", "wide hips and thick thighs", "fit toned healthy glow")
+    must_have = ("barely containing the bust", "bare shoulders midriff",
+                 "fabric tension across bust and hips", "one strap slipping",
+                 "raw matte real skin with visible pores")
     for phrase in must_have:
         assert phrase in ALLURE_V2
     for banned in ("soft belly", "small waist"):
@@ -113,7 +116,7 @@ def test_allure_v2_body_rules_present_in_every_prompt():
 
 
 def test_naughty_actions_injected_and_boring_poses_banned():
-    assert len(NAUGHTY_ACTIONS) == 5
+    assert len(NAUGHTY_ACTIONS) == 7
     assert "never arms crossed" in POSE_ENFORCEMENT.lower()
     assert "never blank stare" in POSE_ENFORCEMENT.lower()
     seen = set()

@@ -134,7 +134,8 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
           IMAGE_PROVIDER: ${{ vars.IMAGE_PROVIDER || 'perchance' }}
           PERCHANCE_URL: ${{ vars.PERCHANCE_URL || 'http://127.0.0.1:8000' }}
-          PERCHANCE_STYLE: 'Realistic humans'
+          PERCHANCE_STYLE: 'Casual Photo'
+          PERCHANCE_GUIDANCE: '7'
           QUOTE_LOW_WATERMARK: ${{ vars.QUOTE_LOW_WATERMARK || '20' }}
           CHARACTER_ID: ${{ vars.CHARACTER_ID || 'meera-v1' }}
           MUSIC_ENABLED: ${{ vars.MUSIC_ENABLED || '1' }}

@@ -20,20 +20,14 @@ from dataclasses import dataclass, field, replace
 
 # Canonical identity — kept verbatim. Do not redesign or silently slim her.
 FIXED_IDENTITY = (
-    "Fictional adult woman, age 25, South Asian Indian appearance, approx 165 cm tall, fair to fair-medium luminous skin with photoreal pores, long voluminous wavy dark chocolate-brown hair with center part cascading over one shoulder, round full-cheeked soft oval face, SAME FACE IN EVERY IMAGE, NEVER change face, large almond-shaped dark brown eyes with thick lashes and winged eyeliner, defined arched eyebrows, delicate straight nose, full glossy rose lips slightly parted with lower lip full, small dark mole below left corner of lips [FACE ANCHOR - never remove], confident seductive lustful expression with bedroom eyes into lens. Body: healthy fit thick curvy hourglass, NOT skinny NOT fat: fuller toned upper arms not flabby, broad smooth shoulders, BIGGER full heavy bust size DD with deep cleavage emphasis held in lace, slim tucked flat fit midriff with narrow toned waist, natural waist curve no abs lines, wide curvy hips ratio 0.7, rounded full lifted butt, very thick fit thighs with soft inner touch but no cellulite exaggeration. Skin glowing sunkissed. Style: ultra-alluring teasing slutty-chic male-gaze lust-appealing sexually pleasing, glamorous bold flirty seductive fashion-forward, provocative tease but NO NUDITY. Always adult fictional. Never transform to skinny/slim/petite/flat-chest. Never transform to fat/flabby/protruding belly/sagging."
+    "Fictional adult woman 25 South Asian Indian, 165cm, fair-medium skin with DRY MATTE real human texture visible pores uneven tone faint blemish, NO shine NO oil NO glow, slight asymmetry, long messy voluminous wavy dark hair with flyaways center part, round full-cheeked face SAME FACE EVERY IMAGE, large almond brown eyes lustful bedroom half-lidded into lens, arched brows, straight nose, full glossy parted lips lusty smirk, small mole below left lip [FACE ANCHOR]. Body: healthy fit lusty NOT skinny NOT fat: toned upper arms, broad shoulders, BIG full heavy DD bust deep cleavage emphasis, slim tucked flat matte midriff narrow toned waist, wide hips rounded full butt very thick toned thighs. Never skinny/flat/petite, never fat/flabby/protruding belly. Style: slutty-chic teasing male-gaze, provocative over-clothes tease NO NUDITY. Always adult."
 )
 
 # Unified negative prompt — bans only hard NSFW/anatomy/identity-drift terms.
 # NEVER bans: cleavage, lingerie, underwear, see-through, sexy, seductive,
 # alluring — those are REQUIRED for the alluring look.
 DEFAULT_NEGATIVE_PROMPT = (
-    "nudity, nipples, areola, genitalia, pubic hair, explicit sexual activity, "
-    "porn, minors, child, teenage, underage, skinny, slim, thin body, anorexic, "
-    "flat chest, small bust, petite, toned abs, fat, flabby, obese, protruding "
-    "belly, big stomach, sagging belly, different face, different-looking "
-    "character, face change, distorted facial features, deformed hands, extra "
-    "fingers, duplicated limbs, visible text, watermark, logo, low quality, "
-    "blurry, cartoon, illustration"
+    "nudity, nipples, areola, genitalia, pubic hair, porn, minors, skinny, slim, thin, flat chest, petite, fat, flabby, protruding belly, big stomach, oily skin, shiny skin, dewy glow, specular highlights, sweaty shine, polished, airbrushed, plastic skin, smooth skin, beauty filter, perfect symmetry, cartoon, illustration, 3d render, CGI, doll, face change, distorted face, text, watermark, logo, blurry"
 )
 
 

@@ -27,8 +27,8 @@ DIMENSIONS = (
 # non-explicit/no-nudity clauses are deliberate platform-safety guardrails.
 QUALITY_CONSTRAINTS = (
     "identical consistent facial features, sharp detailed face, adult 25yo, "
-    "teasing non-nude, no nipples no areola no genitalia, fit toned healthy "
-    "glow, photoreal skin, no distorted features, no duplicated limbs, no "
+    "teasing non-nude, no nipples no areola no genitalia, raw matte human "
+    "skin, visible pores, no distorted features, no duplicated limbs, no "
     "text watermark logo"
 )
 
@@ -36,34 +36,42 @@ QUALITY_CONSTRAINTS = (
 # carry the flat-but-tucked waist AND thick curves so neither "skinny model"
 # nor "fat belly" drift is possible.
 ALLURE_V2 = (
-    "Allure emphasis V2: ultra-sexy body-hugging revealing outfit, short "
-    "length, deep neckline with deep cleavage in lace, bare shoulders and "
-    "midriff and thighs on show, BIGGER full heavy bust, slim tucked flat fit "
-    "midriff and narrow waist, wide hips and thick thighs, rounded full lifted "
-    "butt, fit toned healthy glow, sunkissed skin, seductive pose with hips "
-    "cocked and chest forward and back slightly arched, one hand on body, "
-    "glossy parted lips, lustful eye contact into lens, teasing provocative "
-    "mood, Instagram baddie reel aesthetic, sharp focus on face and body, "
-    "NOT skinny, NOT fat, NO protruding belly"
+    "Allure exposure: tiny black lace bralette barely containing the bust, "
+    "open red satin robe sliding off the shoulders, very short high-cut "
+    "shorts, deep neckline with cleavage emphasis, bare shoulders midriff "
+    "and thighs on show, fabric tension across bust and hips, one strap "
+    "slipping, hips cocked, chest forward, back arched, hands on body, "
+    "parted lips, lustful eye contact, raw matte real skin with visible "
+    "pores, FLAT MATTE complexion with zero shine, no specular highlights "
+    "anywhere on skin, no wet or dewy sheen, dry chalky skin texture, "
+    "diffuse flat window light not direct light, NOT skinny, NOT fat, "
+    "NO protruding belly, NO nudity"
 )
 
 # Backwards-compatible name for older callers.
 ALLURE_BLOCK = ALLURE_V2
+PHOTOREAL_BLOCK = (
+    "raw amateur phone photo, uneven window daylight, slight film grain "
+    "and motion blur, unedited, ordinary messy real room, no studio "
+    "lighting, no polish, matte flat skin pixels, no glow, no highlights"
+)
 
 # Naughty action bank — a different tease action is injected into every pose,
 # so no variation collapses into a plain standing shot.
 NAUGHTY_ACTIONS = (
-    "grabbing her bust over the lace with one hand",
-    "slowly slipping one strap off her shoulder",
-    "hand buried in her hair with her back arched",
+    "grabbing and squeezing her bust over the lace",
+    "slowly pulling one strap down her shoulder",
+    "hands tracing from collarbone down to cleavage",
+    "gripping the shorts hem and pulling it up over her hips",
+    "leaning forward with chest up, back arched and hips cocked",
+    "sitting on the bed with legs open and knees together, leaning in",
     "looking back over her shoulder with hips pushed back",
-    "sitting on the edge of the bed leaning forward toward the camera",
 )
 
 POSE_ENFORCEMENT = (
-    "Pose rule: hips cocked, chest pushed forward, back slightly arched, one "
-    "hand on her body, lips parted, lustful eye contact into the lens. Never "
-    "standing straight, never arms crossed, never blank stare."
+    "Pose rule: hips cocked, chest pushed forward, back arched, one hand "
+    "touching her body, lips parted, lustful half-lidded eye contact into "
+    "the lens. Never standing straight, never arms crossed, never blank stare."
 )
 
 
@@ -88,11 +96,11 @@ class Variation:
 VARIATIONS = [
     Variation(
         key="silk_robe_bedroom",
-        outfit="champagne silk robe worn open over a satin camisole and high-cut shorts",
-        pose="seated upright on a plush bed, hips tilted, one leg tucked beneath her",
-        expression="soft confident smile",
-        gaze="direct eye contact with the camera",
-        camera_angle="eye-level three-quarter angle",
+        outfit="tiny black lace bralette barely containing bust, open red satin robe off shoulders, very short high-cut shorts",
+        pose="grabbing and squeezing her bust over the lace",
+        expression="bedroom eyes and parted lips",
+        gaze="lustful half-lidded eye contact into the lens",
+        camera_angle="intimate POV close-up, low angle",
         camera_distance="medium close-up portrait",
         lighting="soft window light filtered through sheer curtains",
         environment="warm sunlit bedroom with cream linens",
@@ -103,11 +111,11 @@ VARIATIONS = [
     ),
     Variation(
         key="neon_night_street",
-        outfit="thin-strap black satin mini slip dress with a cropped leather jacket left open",
-        pose="leaning against a wall, hip cocked out, chest forward, one hand on her hip",
-        expression="confident seductive smirk",
-        gaze="looking slightly past the camera",
-        camera_angle="low three-quarter angle",
+        outfit="tiny black lace bralette barely containing bust, open red satin robe off shoulders, very short high-cut shorts",
+        pose="slowly pulling one strap down her shoulder",
+        expression="lip bite with lusty smirk",
+        gaze="bedroom eyes staring into the lens",
+        camera_angle="low angle close-up from the hip",
         camera_distance="medium full-body shot",
         lighting="teal and magenta neon glow",
         environment="rain-slick city street at night with bokeh lights",
@@ -118,11 +126,11 @@ VARIATIONS = [
     ),
     Variation(
         key="golden_hour_beach",
-        outfit="high-cut coral bikini with tie-side bottoms",
-        pose="hip cocked, shoulders back, one hand on her hip, the other brushing her hair",
-        expression="seductive playful smile",
-        gaze="lustful eye contact into the lens",
-        camera_angle="eye-level candid angle",
+        outfit="tiny black lace bralette barely containing bust, open red satin robe off shoulders, very short high-cut shorts",
+        pose="hands tracing from collarbone down to cleavage",
+        expression="finger on lips, half-lidded bedroom eyes",
+        gaze="lusty look back over shoulder into the lens",
+        camera_angle="intimate eye-level close-up",
         camera_distance="medium-wide shot",
         lighting="warm golden hour backlight",
         environment="tropical beach with soft rolling waves",
@@ -133,11 +141,11 @@ VARIATIONS = [
     ),
     Variation(
         key="studio_fashion_editorial",
-        outfit="black satin mini slip dress with thin straps and a plunging neckline",
-        pose="hips cocked and pushed forward, back arched, one hand on her hip",
-        expression="fierce seductive gaze",
-        gaze="direct intense eye contact",
-        camera_angle="straight-on eye-level angle",
+        outfit="tiny black lace bralette barely containing bust, open red satin robe off shoulders, very short high-cut shorts",
+        pose="gripping the shorts hem and pulling it up over her hips",
+        expression="lusty smirk with parted lips",
+        gaze="lustful half-lidded eye contact into the lens",
+        camera_angle="intimate POV close-up, low angle",
         camera_distance="full-length fashion shot",
         lighting="dramatic studio key light with soft fill",
         environment="seamless deep charcoal studio backdrop",
@@ -148,11 +156,11 @@ VARIATIONS = [
     ),
     Variation(
         key="cafe_window_candid",
-        outfit="fitted silk blouse with the top buttons open and a high-waisted pencil skirt",
-        pose="seated by a window, cradling a ceramic mug",
-        expression="warm gentle smile",
-        gaze="glancing out of the window",
-        camera_angle="slightly elevated candid angle",
+        outfit="tiny black lace bralette barely containing bust, open red satin robe off shoulders, very short high-cut shorts",
+        pose="leaning forward with chest up, back arched and hips cocked",
+        expression="bedroom eyes and parted lips",
+        gaze="bedroom eyes staring into the lens",
+        camera_angle="low angle close-up from the hip",
         camera_distance="medium close-up",
         lighting="soft diffused daylight",
         environment="cosy corner cafe with plants and wooden tables",
@@ -163,11 +171,11 @@ VARIATIONS = [
     ),
     Variation(
         key="rooftop_pool_dusk",
-        outfit="high-cut emerald green bikini with gold details",
-        pose="leaning back on a sun lounger, hips raised, legs crossed",
-        expression="seductive confident smile",
-        gaze="looking back over her shoulder at the camera",
-        camera_angle="slightly elevated three-quarter angle",
+        outfit="tiny black lace bralette barely containing bust, open red satin robe off shoulders, very short high-cut shorts",
+        pose="sitting on the bed with legs open and knees together, leaning in",
+        expression="lip bite with lusty smirk",
+        gaze="lusty look back over shoulder into the lens",
+        camera_angle="intimate eye-level close-up",
         camera_distance="medium-full shot",
         lighting="soft dusk light with warm string lights",
         environment="rooftop infinity pool overlooking the skyline",
@@ -178,11 +186,11 @@ VARIATIONS = [
     ),
     Variation(
         key="office_chic_blazer",
-        outfit="unbuttoned tailored charcoal blazer over a silk camisole",
-        pose="seated at a desk, leaning forward slightly",
-        expression="focused confident expression",
-        gaze="direct steady eye contact",
-        camera_angle="eye-level portrait angle",
+        outfit="tiny black lace bralette barely containing bust, open red satin robe off shoulders, very short high-cut shorts",
+        pose="looking back over her shoulder with hips pushed back",
+        expression="finger on lips, half-lidded bedroom eyes",
+        gaze="lustful half-lidded eye contact into the lens",
+        camera_angle="intimate POV close-up, low angle",
         camera_distance="medium close-up",
         lighting="soft desk lamp glow mixed with window light",
         environment="modern office with a bright city view",
@@ -193,11 +201,11 @@ VARIATIONS = [
     ),
     Variation(
         key="rainy_window_moody",
-        outfit="soft grey cashmere cardigan over a simple dress",
-        pose="leaning beside a rain-streaked window, hip cocked, one hand on her waist",
-        expression="lustful parted-lip expression",
-        gaze="lustful eye contact into the lens",
-        camera_angle="side three-quarter angle",
+        outfit="tiny black lace bralette barely containing bust, open red satin robe off shoulders, very short high-cut shorts",
+        pose="grabbing and squeezing her bust over the lace",
+        expression="lusty smirk with parted lips",
+        gaze="bedroom eyes staring into the lens",
+        camera_angle="low angle close-up from the hip",
         camera_distance="medium shot",
         lighting="cool grey diffused daylight",
         environment="quiet apartment with rain on the window",
@@ -208,11 +216,11 @@ VARIATIONS = [
     ),
     Variation(
         key="vintage_vanity_lingerie",
-        outfit="black lace lingerie set with a satin robe draped open",
-        pose="seated at a vanity mirror, arched back slightly, one hand on her hip",
-        expression="soft seductive smile",
-        gaze="lustful eye contact into the lens",
-        camera_angle="over-the-shoulder angle",
+        outfit="tiny black lace bralette barely containing bust, open red satin robe off shoulders, very short high-cut shorts",
+        pose="slowly pulling one strap down her shoulder",
+        expression="bedroom eyes and parted lips",
+        gaze="lusty look back over shoulder into the lens",
+        camera_angle="intimate eye-level close-up",
         camera_distance="medium close-up",
         lighting="warm vanity bulb glow",
         environment="elegant dressing room with a vintage vanity",
@@ -223,11 +231,11 @@ VARIATIONS = [
     ),
     Variation(
         key="festival_sunshine",
-        outfit="royal blue bikini top with high-waisted denim shorts",
-        pose="dancing with arms lifted slightly, hips swaying",
-        expression="bright teasing smile",
-        gaze="looking straight into the camera",
-        camera_angle="slightly low candid angle",
+        outfit="tiny black lace bralette barely containing bust, open red satin robe off shoulders, very short high-cut shorts",
+        pose="hands tracing from collarbone down to cleavage",
+        expression="lip bite with lusty smirk",
+        gaze="lustful half-lidded eye contact into the lens",
+        camera_angle="intimate POV close-up, low angle",
         camera_distance="medium-wide shot",
         lighting="bright warm afternoon sun",
         environment="outdoor summer festival with fairy lights",
@@ -238,11 +246,11 @@ VARIATIONS = [
     ),
     Variation(
         key="marble_staircase_glamour",
-        outfit="burgundy satin mini dress with a thigh-high slit and thin straps",
-        pose="descending a marble staircase, hips swaying, one hand on the railing",
-        expression="serene confident smile",
-        gaze="looking down toward the camera",
-        camera_angle="slightly elevated angle",
+        outfit="tiny black lace bralette barely containing bust, open red satin robe off shoulders, very short high-cut shorts",
+        pose="gripping the shorts hem and pulling it up over her hips",
+        expression="finger on lips, half-lidded bedroom eyes",
+        gaze="bedroom eyes staring into the lens",
+        camera_angle="low angle close-up from the hip",
         camera_distance="full-length shot",
         lighting="warm chandelier light",
         environment="grand interior with a curved marble staircase",
@@ -253,11 +261,11 @@ VARIATIONS = [
     ),
     Variation(
         key="streetwear_golden",
-        outfit="cropped streetwear jacket over a fitted tank top and high-waisted trousers",
-        pose="leaning against a graffiti wall, hip cocked, one hand gripping her own waist",
-        expression="cool confident smirk",
-        gaze="looking directly at the camera",
-        camera_angle="eye-level street angle",
+        outfit="tiny black lace bralette barely containing bust, open red satin robe off shoulders, very short high-cut shorts",
+        pose="leaning forward with chest up, back arched and hips cocked",
+        expression="lusty smirk with parted lips",
+        gaze="lusty look back over shoulder into the lens",
+        camera_angle="intimate eye-level close-up",
         camera_distance="medium shot",
         lighting="warm golden afternoon light",
         environment="urban street with a colorful graffiti wall",
@@ -338,6 +346,7 @@ def build_prompt(profile: CharacterProfile, variation: Variation,
         "Scene details: " + scene,
         f"Tease action: {action}. " + POSE_ENFORCEMENT,
         ALLURE_V2,
+        PHOTOREAL_BLOCK,
         "Quality constraints: " + QUALITY_CONSTRAINTS,
     ]
     if extra and extra.strip():

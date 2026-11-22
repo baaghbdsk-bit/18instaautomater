@@ -142,21 +142,15 @@ MARGIN_X = 88
 # Image generation (Perchance wrapper)
 # ---------------------------------------------------------------------------
 PERCHANCE_URL = os.getenv("PERCHANCE_URL", "http://127.0.0.1:8000")
-PERCHANCE_STYLE = os.getenv("PERCHANCE_STYLE", "Realistic humans")
+PERCHANCE_STYLE = os.getenv("PERCHANCE_STYLE", "Casual Photo")
 PERCHANCE_ASPECT = os.getenv("PERCHANCE_ASPECT", "512x768")
-PERCHANCE_GUIDANCE = float(os.getenv("PERCHANCE_GUIDANCE", "9"))
+PERCHANCE_GUIDANCE = int(os.getenv("PERCHANCE_GUIDANCE", "7"))
 # Unified negative prompt — bans only hard NSFW/anatomy/identity-drift terms.
 # NEVER bans: cleavage, lingerie, underwear, see-through, sexy, seductive,
 # alluring — those are REQUIRED for the alluring look.
 PERCHANCE_NEGATIVE = os.getenv(
     "PERCHANCE_NEGATIVE",
-    "nudity, nipples, areola, genitalia, pubic hair, explicit sexual activity, "
-    "porn, minors, child, teenage, underage, skinny, slim, thin body, anorexic, "
-    "flat chest, small bust, petite, toned abs, fat, flabby, obese, protruding "
-    "belly, big stomach, sagging belly, different face, different-looking "
-    "character, face change, distorted facial features, deformed hands, extra "
-    "fingers, duplicated limbs, visible text, watermark, logo, low quality, "
-    "blurry, cartoon, illustration",
+    "nudity, nipples, areola, genitalia, pubic hair, porn, minors, skinny, slim, thin, flat chest, petite, fat, flabby, protruding belly, big stomach, oily skin, shiny skin, dewy glow, specular highlights, sweaty shine, polished, airbrushed, plastic skin, smooth skin, beauty filter, perfect symmetry, cartoon, illustration, 3d render, CGI, doll, face change, distorted face, text, watermark, logo, blurry",
 )
 
 # ---------------------------------------------------------------------------

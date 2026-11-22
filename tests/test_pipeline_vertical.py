@@ -127,7 +127,8 @@ def test_dry_run_generates_composes_validates_and_records(isolated, monkeypatch)
     assert str(post["quote_id"]).startswith("q")
     assert post["quote_text"]
     assert post["prompt_text"]
-    assert post["generation_path"] == str(raw)
+    assert post["generation_path"].endswith(".jpg")
+    assert Path(post["generation_path"]).exists()
     assert post["final_image_path"].endswith("final.jpg")
     assert post["status"] in ("dry-run", "ready_to_publish")
     assert provider.request is not None

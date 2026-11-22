@@ -75,6 +75,7 @@ from config import (
 from audio_mux import mux_track_audio
 from curated_audio import pick_curated_track
 from local_music import pick_local_track
+from matte_finish import apply_matte_finish
 from music_match import track_from_metadata, pick_orgavsm_track
 from post_instagram import (
     find_duplicate,
@@ -465,6 +466,12 @@ def run_image(args) -> int:
             db.update_post(post_id, attempts=result.metadata.get("attempts", 0),
                            error_stage=None)
         print(f"[*] Raw image: {raw_path}")
+
+        # 7b. Deterministic matte finish: compress specular highlights and add
+        # fine grain so the skin reads dry, not oily/plastic.
+        if source != "placeholder":
+            raw_path = apply_matte_finish(raw_path)
+            print(f"[*] Matte image: {raw_path}")
 
         # 8. reject placeholders (never publish them as real AI images)
         if is_placeholder_image(raw_path) or source == "placeholder":
