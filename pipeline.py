@@ -70,6 +70,7 @@ from config import (
     RANDOM_SEED,
     TMP_DIR,
 )
+from audio_mux import mux_track_audio
 from music_match import track_from_metadata
 from post_instagram import (
     find_duplicate,
@@ -557,6 +558,25 @@ def run_image(args) -> int:
                       f"{meta['music']['artist']}")
             else:
                 notes.append("trending music unavailable — posting without audio")
+
+        # 12b-2. Mux the same catalog audio into the MP4 so playback is
+        # audible even when the client does not apply the catalog metadata.
+        if track is not None and args.mode == "reel":
+            try:
+                muxed = mux_track_audio(publish_path, track,
+                                        float(reel["duration"]))
+                candidate = Path(muxed["path"])
+                vok2, vreasons2, _ = validate_video(candidate)
+                if not vok2:
+                    raise RuntimeError("muxed reel invalid: " +
+                                       ", ".join(vreasons2))
+                publish_path = candidate
+                db.update_post(post_id, video_path=str(publish_path))
+                print(f"[+] Reel audio muxed from "
+                      f"{(meta.get('music') or {}).get('title', 'catalog track')}")
+            except Exception as e:  # noqa: BLE001 - metadata path is a fallback
+                notes.append(f"audio mux skipped: {e}")
+                print(f"[!] Audio mux failed, keeping catalog metadata: {e}")
 
         # 12c. publish
         db.update_post(post_id, status="publishing")
