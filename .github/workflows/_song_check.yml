@@ -25,4 +25,4 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/actions/workflows/post.yml/dispatches" \
             -d '{"ref":"main","inputs":{"slot":"song-font-check"}}'
           echo dispatched
-          # retry with log (2)
+          # retry with log and cap (3)
