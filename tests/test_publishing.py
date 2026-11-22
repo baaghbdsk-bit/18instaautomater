@@ -336,7 +336,7 @@ def test_find_trending_tracks_off_returns_empty():
     assert post_instagram.find_trending_tracks(MagicMock(), source="off") == []
 
 
-def test_pick_music_track_prefers_unused_orgavsm_track():
+def test_pick_music_track_prefers_unused_slowburn_track():
     from types import SimpleNamespace
 
     import music_match
@@ -344,12 +344,12 @@ def test_pick_music_track_prefers_unused_orgavsm_track():
     client = MagicMock()
     tracks = [
         SimpleNamespace(id=item["track_id"], title=item["title"],
-                        display_artist="ORGAVSM",
+                        display_artist="SLOWBURN",
                         progressive_download_url="http://audio")
         for item in music_match.CURATED_TRACKS.values()
     ]
     client.search_music.return_value = tracks
-    used = music_match.CURATED_TRACKS["touch_my_body"]["track_id"]
+    used = music_match.CURATED_TRACKS["crave_you"]["track_id"]
     track, key = post_instagram.pick_music_track(
         client, used_keys=[used], mood="flirty")
     assert key != used

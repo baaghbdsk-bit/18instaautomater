@@ -499,7 +499,7 @@ def find_trending_tracks(cl, source: str | None = None, limit: int | None = None
 
 def pick_music_track(cl, used_keys: list | None = None,
                      mood: str | None = None):
-    """Backward-compatible alias: ORGAVSM-only catalog picker."""
+    """Backward-compatible alias: SLOWBURN catalog picker."""
     return pick_orgavsm_track(cl, used_keys=used_keys, mood=mood)
 
 
