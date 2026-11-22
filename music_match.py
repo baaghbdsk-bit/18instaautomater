@@ -83,11 +83,14 @@ def curated_for_mood(mood: str | None) -> list[dict]:
 def pick_orgavsm_track(cl, used_keys: list | None = None,
                        mood: str | None = None):
     """Pick an ORGAVSM track with a persistent 48-hour no-reuse cooldown."""
-    used = set(used_keys or [])
+    used = {str(x) for x in (used_keys or [])}
+    # callers store either track keys or Audio IDs in asset_usage("music").
+    excluded = {k for k in ORGAVSM_KEYS
+                if k in used or CURATED_TRACKS[k]["track_id"] in used}
     candidates = [k for k in ORGAVSM_KEYS
-                  if k not in used and _cooldown_expired(k)]
+                  if k not in excluded and _cooldown_expired(k)]
     if not candidates:
-        available = [k for k in ORGAVSM_KEYS if k not in used] or list(ORGAVSM_KEYS)
+        available = [k for k in ORGAVSM_KEYS if k not in excluded] or list(ORGAVSM_KEYS)
         candidates = [min(available, key=_last_used)]
 
     for key in candidates:
