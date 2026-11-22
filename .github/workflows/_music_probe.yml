@@ -41,7 +41,13 @@ jobs:
           import config
           from post_instagram import login_account
           cl = login_account(config.ACCOUNTS[0])
-          for q in ("orgavsm", "orgasm", "naughty orgavsm", "touch my body orgavsm"):
+          print("=== PICK TEST ===")
+          import music_match
+          track, tid = music_match.pick_orgavsm_track(cl, mood="flirty")
+          print("PICKED", tid, getattr(track, "title", None),
+                getattr(track, "display_artist", None))
+          print("=== RAW SEARCH ===")
+          for q in ("slowburn", "orgavsm", "naughty orgavsm"):
               try:
                   tracks = list(cl.search_music(q) or [])
                   print(f"QUERY {q!r} -> {len(tracks)}")
