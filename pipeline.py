@@ -518,9 +518,13 @@ def run_image(args) -> int:
             if local_track:
                 print(f"[*] Music: {local_track['title']} "
                       f"({local_track['pool']})")
-            reel = still_video(final_path, reel_path,
-                               silent_audio=False,
-                               music_path=(local_track or {}).get("path"))
+            reel = still_video(
+                raw_path, reel_path,
+                silent_audio=False,
+                music_path=(local_track or {}).get("path"),
+                quote_text=quote.text,
+                variant=variant,
+                handle=account.get("handle", ""))
             vok, vreasons, vinfo2 = validate_video(
                 reel["path"], require_audio=True)
             if not vok:

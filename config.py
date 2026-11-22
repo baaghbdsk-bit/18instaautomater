@@ -142,7 +142,7 @@ MARGIN_X = 88
 # Image generation (Perchance wrapper)
 # ---------------------------------------------------------------------------
 PERCHANCE_URL = os.getenv("PERCHANCE_URL", "http://127.0.0.1:8000")
-PERCHANCE_STYLE = os.getenv("PERCHANCE_STYLE", "Cinematic")
+PERCHANCE_STYLE = os.getenv("PERCHANCE_STYLE", "Realistic humans")
 PERCHANCE_ASPECT = os.getenv("PERCHANCE_ASPECT", "512x768")
 PERCHANCE_GUIDANCE = float(os.getenv("PERCHANCE_GUIDANCE", "9"))
 # Unified negative prompt — bans only hard NSFW/anatomy/identity-drift terms.

@@ -165,20 +165,11 @@ def _esc(text: str) -> str:
 
 def build_ass(quote: dict, width: int, height: int, duration: float,
               variant: str, handle: str = "") -> str:
-    # Hook text: TOP 15% only, max 6 words per line, never covers body/cleavage.
-    cy_frac = 0.15  # fixed top zone only
+    # Static overlay placement: lower-middle by default, never over the eyes.
+    cy_frac = {"upper": 0.30, "center": 0.46, "lower": 0.63}.get(variant, 0.63)
     cy = cy_frac * height
     size = quote["size"]
-    lines = quote["lines"]
-    # Truncate each line to max 6 words to keep it short and top-placed.
-    short_lines = []
-    for ln in lines:
-        words = ln.split()
-        if len(words) > 6:
-            short_lines.append(" ".join(words[:6]))
-        else:
-            short_lines.append(ln)
-    lines = short_lines
+    lines = list(quote["lines"])
     line_h = size * LINE_SPACING
     cx = width / 2
 
@@ -193,7 +184,7 @@ YCbCr Matrix: TV.709
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Quote,Barlow Semi Condensed,{size},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,{TEXT_OUTLINE},0,5,{MARGIN_X},{MARGIN_X},0,1
+Style: Quote,Barlow Semi Condensed,{size},&H00FFFFFF,&H000000FF,&H90000000,&H80000000,0,0,0,0,100,100,0,0,3,8,0,5,{MARGIN_X},{MARGIN_X},0,1
 Style: Mark,Archivo Black,24,{accent},&H000000FF,&H90000000,&H80000000,0,0,0,0,100,100,1,0,3,8,0,3,{MARGIN_X},{MARGIN_X},90,1
 
 [Events]
@@ -421,12 +412,12 @@ def _drawtext_filter(quote: dict, width: int, height: int,
     txt.write_text("\n".join(short_lines), encoding="utf-8")
     rel = txt.relative_to(BASE_DIR).as_posix()
     font_rel = FONT_QUOTE.relative_to(BASE_DIR).as_posix()
-    # Top zone only: y = 15% of height.
+    # Lower-middle zone keeps text off the face (matches ASS "lower" variant).
     return (f"drawtext=textfile='{rel}':fontfile='{font_rel}'"
             f":fontsize={quote['size']}:fontcolor=white"
             f":box=1:boxcolor=black@0.55:boxborderw=10"
             f":line_spacing=8"
-            f":x=(w-text_w)/2:y=0.15*h"
+            f":x=(w-text_w)/2:y=0.62*h"
             f":enable='between(t,0,{duration})'")
 
 
@@ -436,13 +427,13 @@ def _drawtext_filter(quote: dict, width: int, height: int,
 def still_video(image_path, output_path, duration: float | None = None,
                 motion: str | None = None, fps: int = VIDEO_FPS,
                 silent_audio: bool = False,
-                music_path=None) -> dict:
-    """Turn a composed quote image into an Instagram Reel MP4.
+                music_path=None, quote_text: str | None = None,
+                variant: str | None = None, handle: str = "") -> dict:
+    """Turn a raw image into an Instagram Reel with STATIC text overlay.
 
-    The quote is already burned into the JPEG by compose_image.py, so no ASS
-    text is added here. The MP4 MUST always carry an audio stream (AAC) so
-    it is never silent — if no catalog track is provided, a local MP3 from
-    assets/music/ is looped as fallback.
+    The image zooms; the quote and handle are drawn on top with libass (or
+    drawtext) after the zoom, so they never move. The composed JPEG from
+    compose_image.py is still used as the photo/thumbnail output.
     """
     from pathlib import Path
 
@@ -462,7 +453,24 @@ def still_video(image_path, output_path, duration: float | None = None,
            f"force_original_aspect_ratio=increase,"
            f"crop={VIDEO_WIDTH}:{VIDEO_HEIGHT},setsar=1")
     grade = "eq=contrast=1.04:saturation=0.96:brightness=-0.02,format=yuv420p"
-    vf = f"{fit},{zoompan},{grade}"
+
+    # Static text overlay: libass draws the quote AFTER zoompan, so the image
+    # moves behind fixed lettering. The composed JPEG is only the thumbnail.
+    text_filter = ""
+    if quote_text:
+        q = layout(quote_text, width=VIDEO_WIDTH, margin_x=MARGIN_X)
+        if _ffmpeg_has_ass():
+            ass_file = TMP_DIR / (
+                f"still_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.ass")
+            ass_file.write_text(
+                build_ass(q, VIDEO_WIDTH, VIDEO_HEIGHT, duration,
+                          variant or "lower", handle), encoding="utf-8")
+            rel_ass = ass_file.relative_to(BASE_DIR).as_posix()
+            rel_fonts = FONTS_DIR.relative_to(BASE_DIR).as_posix()
+            text_filter = f",ass='{rel_ass}':fontsdir='{rel_fonts}'"
+        else:
+            text_filter = f",{_drawtext_filter(q, VIDEO_WIDTH, VIDEO_HEIGHT, duration)}"
+    vf = f"{fit},{zoompan},{grade}{text_filter}"
 
     # Pick fallback music if no catalog track supplied.
     fallback_music = None

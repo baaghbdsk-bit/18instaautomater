@@ -64,6 +64,19 @@ def test_build_ass_structure():
     assert ",Quote,,0,0,0,," in ass
 
 
+def test_static_text_uses_full_quote_and_lower_placement():
+    quote = {"size": 52, "lines": [
+        "I like the kind of chemistry that makes",
+        "innocent conversations feel suspicious.",
+    ]}
+    ass = build_ass(quote, 1080, 1920, 12.0, "lower", "@xene_hotty")
+    for word in ("chemistry", "makes", "innocent", "suspicious"):
+        assert word in ass
+    # lower variant => y around 0.63*1920 = 1210, never the old 0.15 top zone.
+    assert "\\move(540,1206,540,1180,0,420)" in ass
+    assert "\\move(540,1265,540,1239,0,420)" in ass
+
+
 def test_handle_is_at_bottom_not_on_the_face():
     q = {"size": 96, "lines": ["Line one", "Line two"]}
     ass = build_ass(q, 1080, 1920, 12.0, "lower", "@xene_hotty")
