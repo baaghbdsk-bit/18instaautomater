@@ -145,7 +145,8 @@ jobs:
         run: |
           EXTRA_ARGS=""
           if [ -n "${{ inputs.theme }}" ]; then EXTRA_ARGS="$EXTRA_ARGS --theme ${{ inputs.theme }}"; fi
-          python run_all_accounts.py --strict --slot "${{ inputs.slot || 'cron' }}" --mode reel
+          set -o pipefail
+          python run_all_accounts.py --strict --slot "${{ inputs.slot || 'cron' }}" --mode reel 2>&1 | tee diag-run.log
 
       - name: Upload run artifacts
         if: always()
@@ -181,6 +182,15 @@ jobs:
               git pull --rebase --autostash
             }
           done
+
+      - name: Commit diagnostic log
+        if: always()
+        run: |
+          git config user.name "insta-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f diag-run.log
+          git commit -m "chore: diagnostic run log [skip ci]" || true
+          for i in 1 2 3; do git push && break || git pull --rebase --autostash; done
 
       - name: Dump Perchance log on failure
         if: failure()
