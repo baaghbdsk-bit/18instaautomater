@@ -1,5 +1,36 @@
 [+] account_1: restored session (xene_hotty)
+=== PICK TEST ===
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] search_music('Make Me Beg SLOWBURN') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] SLOWBURN 'make_me_beg' not resolvable via search_music()
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] SLOWBURN 'torture_me_gently' not resolvable via search_music()
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] SLOWBURN 'dirty_thoughts' not resolvable via search_music()
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] SLOWBURN 'tease_me' not resolvable via search_music()
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] search_music('Crave You') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] SLOWBURN 'crave_you' not resolvable via search_music()
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] SLOWBURN 'i_want_you_so_bad' not resolvable via search_music()
+[music] search_music('slowburn r&b') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] SLOWBURN 'naughty_girl' not resolvable via search_music()
+[music] search_music('slowburn r&b') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] search_music('Touch And Love SLOWBURN') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] SLOWBURN 'touch_and_love' not resolvable via search_music()
+[music] search_music('slowburn') failed: AttributeError: 'NoneType' object has no attribute 'get'
+[music] no SLOWBURN track available — posting without audio
+PICKED None None None
+=== RAW SEARCH ===
+QUERY slowburn ERR AttributeError 'NoneType' object has no attribute 'get'
 QUERY orgavsm ERR AttributeError 'NoneType' object has no attribute 'get'
-QUERY orgasm ERR AttributeError 'NoneType' object has no attribute 'get'
-QUERY 'naughty orgavsm' -> 0
-QUERY touch my body orgavsm ERR AttributeError 'NoneType' object has no attribute 'get'
+QUERY naughty orgavsm ERR RetryError HTTPSConnectionPool(host='i.instagram.com', port=443): Max retries exceeded with url: /api/v1/music/audio_global_search/?query=naughty+orgavsm&browse_session_id=ee92f639-8b50-488c-8dd1-a17d9692209a (Caused by ResponseError('too many 429 error responses'))
