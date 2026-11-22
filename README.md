@@ -203,7 +203,12 @@ about explicit quote text at the top of this README.
 
 ## Content quality controls
 
-- **Local music bank (primary).** `assets/music/custom/` is checked first —
+- **Curated real songs (primary).** `curated_audio.py` holds verified Instagram
+  Audio IDs for the named artists (The Weeknd, Tame Impala, Cigarettes After
+  Sex, SLOWBURN). `track_info_by_id()` refreshes a playable URL per run (the
+  unreliable `search_music()` is not used), the song is downloaded and muxed
+  into the Reel, and LRU rotation is stored in SQLite.
+- **Local music bank (fallback).** `assets/music/custom/` is checked first —
   drop owner-supplied tracks there (subfolders `flirty/`, `bold/`, `dreamy/`).
   Otherwise the 15 CC-BY 4.0 tracks in `assets/music/{chill,dark,energy}/` are
   used. `local_music.py` rotates least-recently-used via SQLite, and

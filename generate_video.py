@@ -49,9 +49,11 @@ MODES = {
     "feed": (1080, 1350),
 }
 
-FONT_SIZES = (116, 108, 100, 92, 84, 76, 68)
+# Smaller, readable quote sizes. The old 116-68px set made the overlay cover
+# most of the subject in a 1080x1920 Reel.
+FONT_SIZES = (82, 76, 70, 64, 58, 52, 46)
 MAX_LINES = 4
-LINE_SPACING = 1.18
+LINE_SPACING = 1.14
 
 MOTIONS = ["push_center", "push_up", "push_down", "drift_left", "drift_right"]
 
@@ -191,7 +193,7 @@ YCbCr Matrix: TV.709
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Quote,Anton,{size},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,{TEXT_OUTLINE},0,5,{MARGIN_X},{MARGIN_X},0,1
+Style: Quote,Barlow Semi Condensed,{size},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,{TEXT_OUTLINE},0,5,{MARGIN_X},{MARGIN_X},0,1
 Style: Mark,Archivo Black,24,{accent},&H000000FF,&H90000000,&H80000000,0,0,0,0,100,100,1,0,3,8,0,3,{MARGIN_X},{MARGIN_X},90,1
 
 [Events]

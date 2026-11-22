@@ -73,10 +73,14 @@ def _last_used(track: Path) -> float:
         return 0.0
 
 
-def pick_local_track() -> dict | None:
-    """Custom tier first; otherwise least-recently-used licensed bank track."""
+def pick_local_track(custom_only: bool = False) -> dict | None:
+    """Pick a custom track (if any) or a least-recently-used stock track.
+
+    ``custom_only=True`` is used by the pipeline to check for owner-supplied
+    audio before trying the curated catalog bank.
+    """
     custom = all_tracks(custom_only=True)
-    pool = custom or all_tracks()
+    pool = custom if custom_only else (custom or all_tracks())
     if not pool:
         return None
     chosen = min(pool, key=_last_used)

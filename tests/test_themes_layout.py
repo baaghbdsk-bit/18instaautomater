@@ -36,14 +36,14 @@ def test_layout_stays_within_four_lines():
                  "are still watching everything")
     q = layout(long_line)
     assert len(q["lines"]) <= 5                     # 4 normally, 5 at fallback
-    assert q["size"] in (116, 108, 100, 92, 84, 76, 68)
+    assert q["size"] in (82, 76, 70, 64, 58, 52, 46)
     joined = " ".join(q["lines"])
     assert "scrolling" in joined                    # no words dropped
 
 
 def test_layout_short_line_gets_big_font():
     q = layout("Miss me yet, honestly")
-    assert q["size"] >= 100
+    assert q["size"] >= 70
 
 
 def test_ass_color_conversion():
@@ -56,7 +56,7 @@ def test_build_ass_structure():
     ass = build_ass(q, 1080, 1920, 12.0, "upper", "@xene_hotty")
     assert "PlayResX: 1080" in ass
     assert "PlayResY: 1920" in ass
-    assert "Style: Quote,Anton," in ass
+    assert "Style: Quote,Barlow Semi Condensed," in ass
     assert "Style: Mark,Archivo Black,24," in ass
     assert "@xene_hotty" in ass
     assert ass.count("Dialogue:") == len(q["lines"]) + 1   # lines + watermark

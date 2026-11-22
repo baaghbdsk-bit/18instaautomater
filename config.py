@@ -124,8 +124,9 @@ DURATION_MAX = float(os.getenv("DURATION_MAX", "15"))
 SCALE_MODE = os.getenv("SCALE_MODE", "cover")           # cover | contain
 ZOOM_SPEED = float(os.getenv("ZOOM_SPEED", "0.0007"))   # zoompan step per frame
 
-# Fonts (Anton for quotes, Archivo Black for watermark/labels)
-FONT_QUOTE = FONTS_DIR / "Anton-Regular.ttf"
+# Fonts (Barlow Semi Condensed Bold for quotes - cleaner, readable at small
+# sizes; Archivo Black for the small watermark/label).
+FONT_QUOTE = FONTS_DIR / "BarlowSemiCondensed-Bold.ttf"
 FONT_HEAD = FONTS_DIR / "ArchivoBlack-Regular.ttf"
 
 # Text placement: fraction of frame height where the block centre sits.

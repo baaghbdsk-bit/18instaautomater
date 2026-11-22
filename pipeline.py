@@ -73,6 +73,7 @@ from config import (
     TMP_DIR,
 )
 from audio_mux import mux_track_audio
+from curated_audio import pick_curated_track
 from local_music import pick_local_track
 from music_match import track_from_metadata, pick_orgavsm_track
 from post_instagram import (
@@ -504,9 +505,18 @@ def run_image(args) -> int:
                 f"reel_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4")
             # Local bank first: no catalog API, no rate limits, and the audio
             # is physically muxed into the MP4 so it is always audible.
-            local_track = pick_local_track() if MUSIC_ENABLED else None
+            local_track = None
+            if MUSIC_ENABLED:
+                # Priority: owner files > curated real songs > stock CC-BY bed.
+                local_track = pick_local_track(custom_only=True)
+                if not local_track:
+                    client = clients.get(account["name"])
+                    if client is not None:
+                        local_track = pick_curated_track(client)
+                if not local_track:
+                    local_track = pick_local_track()
             if local_track:
-                print(f"[*] Local music: {local_track['title']} "
+                print(f"[*] Music: {local_track['title']} "
                       f"({local_track['pool']})")
             reel = still_video(final_path, reel_path,
                                silent_audio=False,

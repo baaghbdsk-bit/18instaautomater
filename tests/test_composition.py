@@ -13,7 +13,7 @@ from validate import validate_final_image
 QUOTE = "Bet you can't look away from this one, darling"
 LONG_QUOTE = ("You were supposed to keep scrolling past me but here you are "
               "still watching every single thing I do tonight")
-FONT_SIZES = (116, 108, 100, 92, 84, 76, 68)
+FONT_SIZES = (82, 76, 70, 64, 58, 52, 46)
 
 
 def _source(path, size=(600, 900)):

@@ -36,7 +36,7 @@ from generate_video import LINE_SPACING, ensure_scrim, layout
 # with config.VARIANTS / generate_video.build_ass.
 _VARIANT_FRACTIONS = {"upper": 0.30, "center": 0.46, "lower": 0.63}
 
-STROKE_WIDTH = 3          # dark outline around every glyph
+STROKE_WIDTH = 2          # subtle dark outline; text is smaller now
 HANDLE_SIZE = 38          # matches the ASS "Mark" style in generate_video
 JPEG_QUALITY = 95
 
