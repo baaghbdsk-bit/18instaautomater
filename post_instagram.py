@@ -486,11 +486,26 @@ def find_trending_tracks(cl, source: str | None = None, limit: int | None = None
             return list(tracks or [])[:limit]
         if source == "off":
             return []
-        data = cl.music_top_trends(product=MUSIC_TRENDING_PRODUCT)
-        tracks = _tracks_from_response(data)
-        if not tracks:
-            data = cl.music_trending(product="feed_post")
-            tracks = _tracks_from_response(data)
+        tracks: list = []
+        # instagrapi versions differ: some expose music_top_trends, others
+        # only music_trending. Try both without letting AttributeError abort.
+        for method, product in (
+            ("music_top_trends", MUSIC_TRENDING_PRODUCT),
+            ("music_trending", "feed_post"),
+            ("music_trending", MUSIC_TRENDING_PRODUCT),
+        ):
+            fn = getattr(cl, method, None)
+            if fn is None:
+                continue
+            try:
+                data = fn(product=product)
+                tracks = _tracks_from_response(data)
+            except Exception as e:  # noqa: BLE001 - try next catalog endpoint
+                print(f"[music] {method}({product}) failed: "
+                      f"{type(e).__name__}: {str(e)[:120]}")
+                tracks = []
+            if tracks:
+                break
         return tracks[:limit]
     except Exception as e:  # noqa: BLE001 — music is optional, fail soft
         print(f"[music] track discovery failed: {type(e).__name__}: {str(e)[:200]}")
