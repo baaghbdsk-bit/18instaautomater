@@ -16,11 +16,11 @@ from character.profile import CharacterProfile
 # A few distinctive canonical phrases used as an identity-preservation check.
 # Each is a substring of the fixed identity in profile.FIXED_IDENTITY.
 IDENTITY_MARKERS = (
-    "South Asian",
+    "South Asian Indian",
     "dark chocolate-brown hair",
     "almond-shaped dark brown eyes",
-    "full-figured thick healthy curvy hourglass body",
-    "adult fictional character",
+    "full-figured thick curvy hourglass body",
+    "small mole below left lip corner",
 )
 
 

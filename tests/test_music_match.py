@@ -97,5 +97,5 @@ def test_all_variations_stay_non_explicit():
         blob = (variation.outfit + " " + variation.pose).lower()
         assert "nude" not in blob
         assert "naked" not in blob
-    assert "no nudity" in QUALITY_CONSTRAINTS
-    assert "non-explicit" in QUALITY_CONSTRAINTS
+    assert "non-nude" in QUALITY_CONSTRAINTS
+    assert "no explicit sexual activity" in QUALITY_CONSTRAINTS

@@ -25,8 +25,8 @@ from character.variations import (
 def test_identity_prompt_stability():
     assert MASTER_PROFILE.identity_prompt() == MASTER_PROFILE.fixed_identity
     assert MASTER_PROFILE.identity_prompt() == MASTER_PROFILE.identity_prompt()
-    assert "South Asian / Indian appearance" in MASTER_PROFILE.identity_prompt()
-    assert "full-figured thick healthy curvy hourglass body" in MASTER_PROFILE.identity_prompt()
+    assert "South Asian Indian" in MASTER_PROFILE.identity_prompt()
+    assert "full-figured thick curvy hourglass body" in MASTER_PROFILE.identity_prompt()
 
 
 def test_all_variations_have_required_dimension_keys():
@@ -74,11 +74,12 @@ def test_build_prompt_extra_is_last_and_every_variation_preserves_identity():
 
 def test_nonexplicit_constraint_present():
     prompt = build_prompt(MASTER_PROFILE, VARIATIONS[0])
-    assert "non-explicit" in prompt
-    assert "no nudity" in prompt
+    assert "NO NUDITY" in prompt
+    assert "non-nude" in prompt
+    assert "no explicit sexual activity" in prompt
     assert "adult subject" in prompt
     assert "nudity" in MASTER_PROFILE.negative_prompt_text()
-    assert "no visible text or watermark" in QUALITY_CONSTRAINTS
+    assert "no text watermark logo" in QUALITY_CONSTRAINTS
 
 
 def test_select_variation_prefers_unused():
