@@ -71,9 +71,9 @@ CHANNEL_HANDLE = os.getenv("IG_HANDLE_1") or "@xene_hotty"
 # Schedule / cadence guards
 # ---------------------------------------------------------------------------
 # Minimum minutes between two publishes (any account).
-MIN_GAP_MINUTES = int(os.getenv("MIN_GAP_MINUTES", "150"))
+MIN_GAP_MINUTES = int(os.getenv("MIN_GAP_MINUTES", "90"))
 # Per-UTC-day publish cap per account.
-DAILY_CAP_PER_ACCOUNT = int(os.getenv("DAILY_CAP_PER_ACCOUNT", "8"))
+DAILY_CAP_PER_ACCOUNT = int(os.getenv("DAILY_CAP_PER_ACCOUNT", "3"))
 # Local multi-post mode (main.py) pacing — one post per slot only.
 POST_INTERVAL_MIN = int(os.getenv("POST_INTERVAL_MIN", "900"))
 POST_INTERVAL_MAX = int(os.getenv("POST_INTERVAL_MAX", "1800"))

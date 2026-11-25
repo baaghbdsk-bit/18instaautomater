@@ -17,11 +17,13 @@ Usage:
 
 import argparse
 import os
+from pathlib import Path
 import subprocess
 import sys
 
 import db
 from config import ACCOUNTS
+import post_youtube
 
 
 def _latest_published(account_name: str, after_id: int) -> int | None:
@@ -61,28 +63,24 @@ def main() -> int:
         env = os.environ.copy()
         env["IG_ACTIVE_ACCOUNT"] = acc["name"]
 
-        if idx == 0 or args.dry_run:
-            # First account (and every account in dry-run) builds from scratch.
+        if idx == 0 or args.dry_run or source_id is None:
+            # First account, dry run, or fallback when prior account failed: build from scratch.
             cmd = [sys.executable, "pipeline.py", "--strict", "--slot",
                    f"{args.slot}-{acc['name']}", "--mode", args.mode]
             if args.dry_run:
                 cmd.append("--dry-run")
             rc = subprocess.run(cmd, env=env).returncode
-            if rc == 0 and idx == 0 and not args.dry_run:
+            if rc == 0 and not args.dry_run and source_id is None:
                 source_id = _latest_published(acc["name"], baseline)
                 if source_id is None:
                     print("[!] Could not identify the post just published — "
-                          "other accounts will build their own content.")
-        elif source_id is not None:
+                          "remaining accounts will build their own content.")
+        else:
             # Same content, same music, different page.
             cmd = [sys.executable, "pipeline.py", "--strict", "--slot",
                    f"{args.slot}-{acc['name']}", "--mode", args.mode,
                    "--repost", str(source_id)]
             rc = subprocess.run(cmd, env=env).returncode
-        else:
-            print(f"[!] {acc['name']}: no source post available — skipping.")
-            failures += 1
-            continue
 
         if rc != 0:
             failures += 1
@@ -90,6 +88,27 @@ def main() -> int:
         else:
             role = "original" if idx == 0 or args.dry_run else "same content"
             print(f"[+] {acc['name']} completed ({role}).")
+
+    # If at least one post was published and YouTube is configured, upload to YouTube Shorts
+    if source_id is not None and not args.dry_run and post_youtube.is_configured():
+        post_data = db.get_post(source_id)
+        if post_data and post_data.get("video_path"):
+            v_path = Path(post_data["video_path"])
+            if v_path.exists():
+                print(f"\n{'=' * 64}")
+                print("  YOUTUBE SHORTS PUBLISHING")
+                print('=' * 64)
+                title = post_data.get("title") or post_data.get("quote_text") or "Reel"
+                desc = post_data.get("caption_text") or ""
+                yt_res = post_youtube.upload_short(video_path=v_path, title=title, description=desc)
+                if yt_res.get("ok"):
+                    print(f"[+] YouTube Shorts published: {yt_res['url']}")
+                else:
+                    print(f"[!] YouTube upload failed: {yt_res.get('error')}")
+            else:
+                print(f"[-] Video file missing for YouTube upload: {v_path}")
+    elif not post_youtube.is_configured():
+        print("[i] YouTube not configured — skipping YouTube Shorts (run setup_youtube.py to enable).")
 
     print(f"\nDone. {len(targets) - failures}/{len(targets)} account(s) succeeded.")
     return 1 if failures else 0

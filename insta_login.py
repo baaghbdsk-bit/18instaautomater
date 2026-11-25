@@ -165,13 +165,43 @@ def check_session(username: str) -> int:
     return 0
 
 
+def sessionid_login(sessionid: str, username: str | None = None) -> int:
+    print("=== Instagram sessionid login ===")
+    client = Client()
+    client.delay_range = [1, 3]
+    try:
+        print("[*] Logging in via sessionid...")
+        client.login_by_sessionid(sessionid.strip())
+        info = client.account_info()
+        real_user = getattr(info, "username", username or "account")
+        print(f"[+] Successfully logged in as @{real_user}")
+        
+        session_file = SESSIONS_DIR / f"{real_user}.json"
+        SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
+        client.dump_settings(session_file)
+        print(f"[+] Saved valid session to {session_file}")
+        print("\nNext steps:")
+        print(f"  1. Run: python export_sessions.py --user {real_user}")
+        print("  2. Copy the exported secret to GitHub Secrets (IG_SESSION_1).")
+        return 0
+    except Exception as e:
+        print(f"[!] sessionid login failed: {e}")
+        return 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", metavar="USERNAME",
                         help="Only inspect a cached session file, no login/network")
+    parser.add_argument("--sessionid",
+                        help="Log in directly using browser sessionid cookie")
+    parser.add_argument("--user",
+                        help="Username for sessionid login (optional, auto-detected)")
     args = parser.parse_args()
     if args.check:
         return check_session(args.check)
+    if args.sessionid:
+        return sessionid_login(args.sessionid, args.user)
     return interactive_login()
 
 
