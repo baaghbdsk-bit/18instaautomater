@@ -20,7 +20,7 @@ from dataclasses import dataclass, field, replace
 
 # Canonical identity — kept verbatim. Do not redesign or silently slim her.
 FIXED_IDENTITY = (
-    "Fictional adult woman 25 South Asian Indian, 165cm, fair-medium skin with DRY MATTE real human texture visible pores uneven tone faint blemish, NO shine NO oil NO glow, slight asymmetry, long messy voluminous wavy dark hair with flyaways center part, round full-cheeked face SAME FACE EVERY IMAGE, large almond brown eyes lustful bedroom half-lidded into lens, arched brows, straight nose, full glossy parted lips lusty smirk, small mole below left lip [FACE ANCHOR]. Body: healthy fit lusty NOT skinny NOT fat: toned upper arms, broad shoulders, BIG full heavy DD bust deep cleavage emphasis, slim tucked flat matte midriff narrow toned waist, wide hips rounded full butt very thick toned thighs. Never skinny/flat/petite, never fat/flabby/protruding belly. Style: slutty-chic teasing male-gaze, provocative over-clothes tease NO NUDITY. Always adult."
+    "Fictional adult woman 25 South Asian Indian, 165cm, fair-medium skin with DRY MATTE real human texture visible pores uneven tone faint blemish, NO shine NO oil NO glow, slight asymmetry, long messy voluminous wavy dark brown hair with flyaways center part, oval-round cheeked face SAME FACE EVERY IMAGE, light hazel-green eyes, soft freckles across nose and cheeks, double silver nose rings, small black heart mark below left eye, small mole below left lip [FACE ANCHOR], arched brows, straight nose, full glossy parted lips flirty smirk. Body: curvy hourglass healthy fit NOT skinny NOT fat: toned upper arms, BIG full heavy DD bust deep cleavage emphasis, slim tucked flat matte midriff narrow toned waist, wide hips rounded full glutes thick toned thighs. Never skinny/flat/petite, never fat/flabby/protruding belly. Style: alluring glamour-chic teasing fashion NO NUDITY. Always adult."
 )
 
 # Unified negative prompt — bans only hard NSFW/anatomy/identity-drift terms.
@@ -45,7 +45,7 @@ class CharacterProfile:
     version: str = "1.0"
     fixed_identity: str = FIXED_IDENTITY
     negative_prompt: str = DEFAULT_NEGATIVE_PROMPT
-    reference_images: list = field(default_factory=list)
+    reference_images: list = field(default_factory=lambda: ["character/references/master.jpg"])
     style_preset: str = "glamour_editorial"
     notes: str = ""
 

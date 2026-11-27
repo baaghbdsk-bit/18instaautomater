@@ -366,4 +366,4 @@ def test_registry_defaults_to_configured_provider():
     assert isinstance(get_provider(), perchance.PerchanceProvider)
     assert isinstance(get_provider("NVIDIA"), nvidia.NvidiaProvider)
     assert isinstance(get_provider("placeholder"), placeholder.PlaceholderProvider)
-    assert available_providers() == ["nvidia", "perchance", "placeholder"]
+    assert available_providers() == ["fal_kontext", "nvidia", "perchance", "placeholder"]

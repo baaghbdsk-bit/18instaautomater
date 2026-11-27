@@ -5,12 +5,14 @@ image_providers/registry.py — provider lookup by configuration or explicit nam
 import config
 
 from .base import ImageProvider
+from .fal_kontext import FalKontextProvider
 from .nvidia import NvidiaProvider
 from .perchance import PerchanceProvider
 from .placeholder import PlaceholderProvider
 
 # Maps a provider name to its (stateless) implementation class.
 PROVIDERS = {
+    "fal_kontext": FalKontextProvider,
     "perchance": PerchanceProvider,
     "placeholder": PlaceholderProvider,
     "nvidia": NvidiaProvider,

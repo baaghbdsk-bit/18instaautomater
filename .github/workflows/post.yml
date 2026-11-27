@@ -1,10 +1,7 @@
-name: Scheduled quote post
+name: Scheduled quote post (Instagram paused - manual only)
 
 on:
-  schedule:
-    # 3 peak-engagement slots/day:
-    # 1:30 PM IST (08:00 UTC), 7:30 PM IST (14:00 UTC), 9:30 PM IST (16:00 UTC)
-    - cron: "0 8,14,16 * * *"
+  # Instagram automatic schedule disabled to prevent account flags; use x_post.yml for X.
   workflow_dispatch:
     inputs:
       dry_run:

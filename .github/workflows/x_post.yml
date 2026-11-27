@@ -1,0 +1,54 @@
+name: Daily Character X Autopilot
+
+on:
+  schedule:
+    # Twice daily at 18:00 and 22:00 IST (12:30 and 16:30 UTC)
+    - cron: "30 12,16 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Generate image only, do not post to X"
+        type: boolean
+        default: false
+
+concurrency:
+  group: x-character-posting
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  post-x:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install playwright
+          playwright install chromium --with-deps
+
+      - name: Run tests
+        run: python -m pytest -q
+
+      - name: Generate & Publish to X
+        env:
+          FAL_KEY: ${{ secrets.FAL_KEY }}
+          X_COOKIES_BASE64: ${{ secrets.X_COOKIES_BASE64 }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            python post_x.py --dry-run
+          else
+            python post_x.py
+          fi
