@@ -81,11 +81,27 @@ def post_to_x(text: str, media_path: Path, dry_run: bool = False) -> bool:
 
     from playwright.sync_api import sync_playwright
 
-    raw_cookies = json.loads(X_COOKIES_FILE.read_text(encoding="utf-8"))
+    raw_state = json.loads(X_COOKIES_FILE.read_text(encoding="utf-8"))
+    args = [
+        "--disable-blink-features=AutomationControlled",
+        "--no-sandbox",
+        "--disable-infobars",
+    ]
+    user_agent = (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    )
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        ctx = browser.new_context(viewport={"width": 1280, "height": 850})
-        ctx.add_cookies(raw_cookies)
+        browser = p.chromium.launch(headless=True, args=args)
+        if isinstance(raw_state, dict) and "cookies" in raw_state:
+            ctx = browser.new_context(
+                storage_state=str(X_COOKIES_FILE),
+                viewport={"width": 1280, "height": 850},
+                user_agent=user_agent,
+            )
+        else:
+            ctx = browser.new_context(viewport={"width": 1280, "height": 850}, user_agent=user_agent)
+            ctx.add_cookies(raw_state)
         page = ctx.new_page()
         page.goto("https://x.com/compose/post", timeout=35000, wait_until="domcontentloaded")
         page.wait_for_timeout(3000)

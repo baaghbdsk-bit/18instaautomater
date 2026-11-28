@@ -1,17 +1,20 @@
 """
-x_login.py — Interactive X (Twitter) login & cookie exporter for GitHub Actions.
+x_login.py — Interactive X (Twitter) login & storage_state exporter for GitHub Actions.
 
-Opens a visible Chromium window to https://x.com/i/flow/login, waits until
-you complete login (including 2FA if enabled), saves ``x_session/cookies.json``,
-and writes the base64 string to ``x_session/x_cookies_b64.txt`` (also copied
-to the Windows clipboard when available) for your ``X_COOKIES_BASE64`` secret.
+Matches NeuBench-Automator's anti-detect browser setup (real Chrome channel when
+available, ``--disable-blink-features=AutomationControlled``, no ``--enable-automation``,
+and persistent context) so Google OAuth / X login never triggers "This browser or app
+may not be secure".
+
+Saves full Playwright ``storage_state`` (cookies + localStorage) to
+``x_session/cookies.json`` and writes base64 to ``x_session/x_cookies_b64.txt``
+(plus copies it to your Windows clipboard) for GitHub Secret ``X_COOKIES_BASE64``.
 
 Usage:
     python x_login.py
 """
 
 import base64
-import json
 import subprocess
 import sys
 import time
@@ -19,6 +22,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 X_SESSION_DIR = ROOT / "x_session"
+PROFILE_DIR = X_SESSION_DIR / "browser_profile"
 COOKIES_PATH = X_SESSION_DIR / "cookies.json"
 B64_PATH = X_SESSION_DIR / "x_cookies_b64.txt"
 
@@ -39,41 +43,68 @@ def main() -> int:
         return 1
 
     X_SESSION_DIR.mkdir(parents=True, exist_ok=True)
-    print("[*] Launching Chromium for X login...")
-    print("[*] Please log in to your X account in the browser window.")
-    print("[*] Waiting up to 5 minutes for auth_token + ct0 cookies...")
+    PROFILE_DIR.mkdir(parents=True, exist_ok=True)
+
+    print("\n" + "=" * 60)
+    print("X-Post-Automater: 1-Time Session Setup")
+    print("=" * 60)
+    print("A real browser window is about to open.")
+    print("1. Log in to your X (Twitter) account (Google or username/password).")
+    print("2. Complete any 2FA or verification if prompted.")
+    print("3. Wait until you see your normal X Home Feed.")
+    print("4. Return here or wait — auto-detecting login (up to 5 min)...")
+    print("=" * 60 + "\n")
+
+    launch_kwargs = {
+        "user_data_dir": str(PROFILE_DIR),
+        "headless": False,
+        "viewport": {"width": 1280, "height": 850},
+        "ignore_default_args": ["--enable-automation"],
+        "args": [
+            "--disable-blink-features=AutomationControlled",
+            "--no-sandbox",
+            "--disable-infobars",
+            "--start-maximized",
+        ],
+    }
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        ctx = browser.new_context(viewport={"width": 1280, "height": 850})
-        page = ctx.new_page()
-        page.goto("https://x.com/i/flow/login", timeout=60000)
+        try:
+            context = p.chromium.launch_persistent_context(channel="chrome", **launch_kwargs)
+        except Exception:
+            context = p.chromium.launch_persistent_context(**launch_kwargs)
+
+        page = context.pages[0] if context.pages else context.new_page()
+        page.goto("https://x.com/login", timeout=60000)
 
         deadline = time.time() + 300
         logged_in = False
         while time.time() < deadline:
-            cookies = ctx.cookies()
-            names = {c.get("name") for c in cookies if "x.com" in c.get("domain", "") or "twitter.com" in c.get("domain", "")}
+            cookies = context.cookies()
+            names = {
+                c.get("name")
+                for c in cookies
+                if "x.com" in c.get("domain", "") or "twitter.com" in c.get("domain", "")
+            }
             if "auth_token" in names and "ct0" in names:
-                # Give X a moment to finish settling session storage
-                page.wait_for_timeout(2000)
-                cookies = ctx.cookies()
+                page.wait_for_timeout(2500)
                 logged_in = True
                 break
             time.sleep(1.5)
 
         if not logged_in:
             print("[!] Timed out waiting for X login.")
-            browser.close()
+            context.close()
             return 1
 
-        COOKIES_PATH.write_text(json.dumps(cookies, indent=2), encoding="utf-8")
+        # Save full storage_state (cookies + localStorage), matching NeuBench-Automator
+        context.storage_state(path=str(COOKIES_PATH))
         b64 = base64.b64encode(COOKIES_PATH.read_bytes()).decode("ascii")
         B64_PATH.write_text(b64, encoding="utf-8")
         copied = _copy_to_clipboard(b64)
-        browser.close()
+        context.close()
 
-    print(f"\n[+] Saved {len(cookies)} cookies -> {COOKIES_PATH}")
+    print(f"\n[+] Saved full X storage_state -> {COOKIES_PATH}")
     print(f"[+] Saved base64 string -> {B64_PATH}")
     if copied:
         print("[+] Copied X_COOKIES_BASE64 to your clipboard! Paste it into GitHub Secrets.")
