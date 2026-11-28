@@ -62,7 +62,6 @@ def generate_character_image(provider_name: Optional[str] = None) -> Path:
         aspect_ratio="3:4",
         width=832,
         height=1152,
-        seed="424242",
         reference_images=list(MASTER_PROFILE.reference_images),
     )
 
