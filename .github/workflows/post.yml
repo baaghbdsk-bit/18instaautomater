@@ -1,9 +1,9 @@
-name: Scheduled quote post (Instagram 1x/day hardened)
+name: Scheduled quote post (Instagram 3x/day cookie-only)
 
 on:
   schedule:
-    # Safe 1x/day slot at 6:45 PM IST (13:15 UTC) to minimize flag risk
-    - cron: "15 13 * * *"
+    # 3x/day IST (10:30 AM, 5:30 PM, 9:30 PM IST); trigger 10 min early at :50
+    - cron: "50 4,11,15 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -131,8 +131,8 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
           NOTIFY_WEBHOOK_URL: ${{ secrets.NOTIFY_WEBHOOK_URL }}
-          MIN_GAP_MINUTES: '1200'
-          DAILY_CAP_PER_ACCOUNT: '1'
+          MIN_GAP_MINUTES: '180'
+          DAILY_CAP_PER_ACCOUNT: '3'
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
           IMAGE_PROVIDER: ${{ vars.IMAGE_PROVIDER || 'perchance' }}
           PERCHANCE_URL: ${{ vars.PERCHANCE_URL || 'http://127.0.0.1:8000' }}
