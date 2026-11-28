@@ -45,10 +45,35 @@ jobs:
       - name: Run tests
         run: python -m pytest -q
 
+      - name: Start Perchance image API (xvfb — launches headful Chrome)
+        run: |
+          sudo apt-get install -y -qq xvfb
+          if ! command -v google-chrome >/dev/null 2>&1 && \
+             ! command -v chromium-browser >/dev/null 2>&1 && \
+             ! command -v chromium >/dev/null 2>&1; then
+            wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            sudo apt-get install -y -qq ./google-chrome-stable_current_amd64.deb
+          fi
+          git clone --depth 1 https://github.com/afrozthalam/Perchance-API.git
+          pip install -q -r Perchance-API/requirements.txt
+          nohup xvfb-run -a -s "-screen 0 1280x1024x24" \
+            python Perchance-API/app.py > perchance.log 2>&1 &
+          for i in $(seq 1 75); do
+            if curl -sf http://127.0.0.1:8000/v1/health | grep -q '"ready": *true'; then
+              echo "Perchance ready after ~$((i*2))s"; break
+            fi
+            sleep 2
+          done
+          if ! curl -sf http://127.0.0.1:8000/v1/health | grep -q '"ready": *true'; then
+            echo "::error::Perchance browser pool never became ready"
+            tail -n 120 perchance.log || true
+            exit 1
+          fi
+
       - name: Generate & Publish to X
         env:
           NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
-          IMAGE_PROVIDER: nvidia
+          IMAGE_PROVIDER: perchance
           X_COOKIES_BASE64: ${{ secrets.X_COOKIES_BASE64 }}
           DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
           COUNT: ${{ github.event.inputs.count || '1' }}

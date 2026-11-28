@@ -88,19 +88,18 @@ def _editorial_glamour_prompt(variation, idx: int = 0) -> str:
 
 def generate_character_image(provider_name: Optional[str] = None, idx: int = 0) -> Path:
     variation = select_variation([])
-    prompt = _editorial_glamour_prompt(variation, idx=idx) if not provider_name or provider_name == "nvidia" else build_prompt(MASTER_PROFILE, variation)
-    req = ImageRequest(
-        prompt=prompt,
-        negative_prompt=MASTER_PROFILE.negative_prompt_text(),
-        aspect_ratio="3:4",
-        width=832,
-        height=1152,
-        reference_images=list(MASTER_PROFILE.reference_images),
-    )
-
-    candidates = [provider_name] if provider_name else (["nvidia", "perchance"] if os.getenv("NVIDIA_API_KEY") else ["perchance"])
+    candidates = [provider_name] if provider_name else (["perchance", "nvidia"] if os.getenv("NVIDIA_API_KEY") else ["perchance"])
     errors = []
     for name in candidates:
+        prompt = _editorial_glamour_prompt(variation, idx=idx) if name == "nvidia" else build_prompt(MASTER_PROFILE, variation)
+        req = ImageRequest(
+            prompt=prompt,
+            negative_prompt=MASTER_PROFILE.negative_prompt_text(),
+            aspect_ratio="3:4",
+            width=832,
+            height=1152,
+            reference_images=list(MASTER_PROFILE.reference_images),
+        )
         provider = get_provider(name)
         res = provider.generate(req)
         if res.ok and res.path:
