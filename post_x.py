@@ -30,14 +30,14 @@ X_COOKIES_FILE = X_SESSION_DIR / "cookies.json"
 X_HISTORY_FILE = ROOT / "data" / "x_history.json"
 
 CAPTIONS = [
-    "Be honest—would you look twice if I walked past you? 👀",
-    "Which vibe hits harder: tonight's look or yesterday's? 👇",
-    "Caught the right light before heading out ✨",
-    "Tell me what you're thinking without holding back.",
-    "Rate tonight's fit 1-10 🔥",
-    "Just checking in. How's your night going? 😉",
-    "Obsessed with how this outfit fits.",
-    "Late night mood. Stay up with me?",
+    "VIP booth energy tonight 🥂 Rate the fit 1-10 👇",
+    "Out past 2am again—who's still awake? 👀",
+    "Dressed for trouble, staying for the music 🔥",
+    "Be honest—would you buy me a drink or just stare?",
+    "Too much energy to stay home tonight ✨",
+    "Afterparty mood. Yes or no on this dress? 😉",
+    "Caught the right flash before hitting the club.",
+    "Late night, loud music, zero regrets.",
 ]
 
 
