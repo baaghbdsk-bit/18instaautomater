@@ -2,8 +2,8 @@ name: Daily Character X Autopilot
 
 on:
   schedule:
-    # Twice daily at 18:00 and 22:00 IST (12:30 and 16:30 UTC)
-    - cron: "30 12,16 * * *"
+    # Every 4 hours (6x daily), using off-peak :15 to avoid :00 GitHub Actions queue drops
+    - cron: "15 */4 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
