@@ -64,23 +64,31 @@ def _is_blank_or_black(path: Path) -> bool:
         return True
 
 
-def _editorial_glamour_prompt(variation) -> str:
+EDITORIAL_OUTFITS = [
+    ("fitted emerald satin slip dress", "warm golden hour rooftop terrace", "relaxed over-the-shoulder glance with a playful smile"),
+    ("burgundy off-shoulder midi dress", "dimly lit upscale lounge", "leaning slightly forward with a confident smirk"),
+    ("sleek black ribbed top and high-waisted tailored trousers", "sunlit minimalist apartment window", "hand resting lightly near collarbone, warm eye contact"),
+    ("soft cream cashmere cardigan over a fitted camisole", "cozy cafe corner with warm bokeh", "candid laugh looking toward the camera"),
+    ("cobalt blue fitted sundress with delicate gold jewelry", "Mediterranean coastal balcony at sunset", "chin tilted slightly up, breezy natural hair"),
+]
+
+
+def _editorial_glamour_prompt(variation, idx: int = 0) -> str:
     """Clean editorial fashion/glamour prompt that passes NVIDIA NIM without black-out."""
+    outfit, env, pose = EDITORIAL_OUTFITS[idx % len(EDITORIAL_OUTFITS)]
     return (
         "Candid editorial portrait photograph of a 25-year-old South Asian woman, "
         "light hazel-green eyes, soft freckles across nose and cheeks, small silver nose ring, "
         "long wavy dark brown hair, natural skin texture with visible pores, "
-        "curvy hourglass figure, confident warm smile. "
-        f"Wearing {variation.outfit}, pose: {variation.pose}, "
-        f"expression: {variation.expression}, "
-        f"environment: {variation.environment}, lighting: {variation.lighting}, "
+        "curvy hourglass figure, confident warm expression. "
+        f"Wearing {outfit}, {pose}, in a {env}, "
         "shot on 50mm f/1.8 lens, natural depth of field, realistic fashion photography."
     )
 
 
-def generate_character_image(provider_name: Optional[str] = None) -> Path:
+def generate_character_image(provider_name: Optional[str] = None, idx: int = 0) -> Path:
     variation = select_variation([])
-    prompt = _editorial_glamour_prompt(variation) if not provider_name or provider_name == "nvidia" else build_prompt(MASTER_PROFILE, variation)
+    prompt = _editorial_glamour_prompt(variation, idx=idx) if not provider_name or provider_name == "nvidia" else build_prompt(MASTER_PROFILE, variation)
     req = ImageRequest(
         prompt=prompt,
         negative_prompt=MASTER_PROFILE.negative_prompt_text(),
@@ -168,7 +176,7 @@ def main() -> int:
 
     total = max(1, min(args.count, 5)) if args.dry_run else 1
     for i in range(total):
-        img_path = generate_character_image(provider_name=args.provider)
+        img_path = generate_character_image(provider_name=args.provider, idx=i)
         caption = args.caption or _pick_caption()
         post_to_x(caption, img_path, dry_run=args.dry_run)
     return 0
