@@ -72,7 +72,8 @@ def _editorial_glamour_prompt(variation) -> str:
         "long wavy dark brown hair, natural skin texture with visible pores, "
         "curvy hourglass figure, confident warm smile. "
         f"Wearing {variation.outfit}, pose: {variation.pose}, "
-        f"setting: {variation.setting}, lighting: {variation.lighting}, "
+        f"expression: {variation.expression}, "
+        f"environment: {variation.environment}, lighting: {variation.lighting}, "
         "shot on 50mm f/1.8 lens, natural depth of field, realistic fashion photography."
     )
 
