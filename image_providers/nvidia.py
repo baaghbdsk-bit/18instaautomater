@@ -118,9 +118,10 @@ class NvidiaProvider(ImageProvider):
             "cfg_scale": 0,
             "width": request.width,
             "height": request.height,
-            "seed": _as_seed(request.seed),
             "steps": 4,
         }
+        if request.seed is not None:
+            payload["seed"] = _as_seed(request.seed)
         url = config.NVIDIA_FLUX_URL
 
         def do_call() -> bytes:
