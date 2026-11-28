@@ -10,6 +10,10 @@ on:
         description: "Generate image only, do not post to X"
         type: boolean
         default: false
+      count:
+        description: "Number of dry-run variations to generate (1-5)"
+        type: string
+        default: "1"
 
 concurrency:
   group: x-character-posting
@@ -47,9 +51,19 @@ jobs:
           IMAGE_PROVIDER: nvidia
           X_COOKIES_BASE64: ${{ secrets.X_COOKIES_BASE64 }}
           DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+          COUNT: ${{ github.event.inputs.count || '1' }}
         run: |
           if [ "$DRY_RUN" = "true" ]; then
-            python post_x.py --dry-run
+            python post_x.py --dry-run --count "$COUNT"
           else
             python post_x.py
           fi
+
+      - name: Upload generated preview images (dry-run)
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: x-preview-${{ github.run_number }}
+          path: assets/images/nvidia_*.jpg
+          if-no-files-found: ignore
+          retention-days: 7

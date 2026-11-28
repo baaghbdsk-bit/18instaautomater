@@ -133,11 +133,14 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="Generate image without posting to X")
     parser.add_argument("--provider", default=None, help="Override image provider (e.g. fal_kontext)")
     parser.add_argument("--caption", default=None, help="Optional custom X caption")
+    parser.add_argument("--count", type=int, default=1, help="Number of variations to generate (dry-run review)")
     args = parser.parse_args()
 
-    img_path = generate_character_image(provider_name=args.provider)
-    caption = args.caption or _pick_caption()
-    post_to_x(caption, img_path, dry_run=args.dry_run)
+    total = max(1, min(args.count, 5)) if args.dry_run else 1
+    for i in range(total):
+        img_path = generate_character_image(provider_name=args.provider)
+        caption = args.caption or _pick_caption()
+        post_to_x(caption, img_path, dry_run=args.dry_run)
     return 0
 
 
