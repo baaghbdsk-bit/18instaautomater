@@ -89,6 +89,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: x-preview-${{ github.run_number }}
-          path: assets/images/nvidia_*.jpg
+          path: assets/images/*.jpg
           if-no-files-found: ignore
           retention-days: 7
+
+      - name: Persist X variation history
+        if: always() && github.event.inputs.dry_run != 'true'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f data/x_history.json ]; then
+            git add data/x_history.json
+            git diff --cached --quiet || git commit -m "chore(x): record used variation [skip ci]"
+            git pull --rebase origin main --autostash || true
+            git push origin main || true
+          fi

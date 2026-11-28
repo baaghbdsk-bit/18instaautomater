@@ -27,17 +27,39 @@ from image_providers import ImageRequest, get_provider
 ROOT = Path(__file__).resolve().parent
 X_SESSION_DIR = ROOT / "x_session"
 X_COOKIES_FILE = X_SESSION_DIR / "cookies.json"
+X_HISTORY_FILE = ROOT / "data" / "x_history.json"
 
 CAPTIONS = [
-    "New look today. Thoughts? 👀",
-    "Which vibe suits me better—this or yesterday's?",
+    "Be honest—would you look twice if I walked past you? 👀",
+    "Which vibe hits harder: tonight's look or yesterday's? 👇",
     "Caught the right light before heading out ✨",
-    "Mood today: keeping it effortless.",
-    "Rate tonight's outfit 1-10 👇",
-    "Just checking in. How's your evening going?",
-    "Obsessed with how this fit turned out 🔥",
-    "Soft lighting, sharper mood.",
+    "Tell me what you're thinking without holding back.",
+    "Rate tonight's fit 1-10 🔥",
+    "Just checking in. How's your night going? 😉",
+    "Obsessed with how this outfit fits.",
+    "Late night mood. Stay up with me?",
 ]
+
+
+def _load_used_keys() -> list:
+    try:
+        if X_HISTORY_FILE.exists():
+            data = json.loads(X_HISTORY_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, list):
+                return data[-10:]
+    except Exception:
+        pass
+    return []
+
+
+def _record_used_key(key: str) -> None:
+    try:
+        X_HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        keys = _load_used_keys()
+        keys.append(key)
+        X_HISTORY_FILE.write_text(json.dumps(keys[-20:], indent=2), encoding="utf-8")
+    except Exception:
+        pass
 
 
 def restore_x_cookies() -> bool:
@@ -87,7 +109,7 @@ def _editorial_glamour_prompt(variation, idx: int = 0) -> str:
 
 
 def generate_character_image(provider_name: Optional[str] = None, idx: int = 0) -> Path:
-    variation = select_variation([])
+    variation = select_variation(_load_used_keys())
     candidates = [provider_name] if provider_name else (["perchance", "nvidia"] if os.getenv("NVIDIA_API_KEY") else ["perchance"])
     errors = []
     for name in candidates:
@@ -108,6 +130,7 @@ def generate_character_image(provider_name: Optional[str] = None, idx: int = 0) 
                 out.unlink(missing_ok=True)
                 errors.append(f"{provider.name}: returned solid black/blank frame (safety filtered)")
                 continue
+            _record_used_key(variation.key)
             return out
         errors.append(f"{provider.name}: {res.error}")
     raise RuntimeError("All free image providers failed -> " + " | ".join(errors))
