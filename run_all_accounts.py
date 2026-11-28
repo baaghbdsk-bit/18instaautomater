@@ -46,6 +46,8 @@ def main() -> int:
     args = parser.parse_args()
 
     targets = [a for a in ACCOUNTS if a.get("username") and a.get("password")]
+    if not targets and os.getenv("INSTAGRAM_COOKIES_BASE64"):
+        targets = [{"name": "account_1", "username": os.getenv("IG_USERNAME_1", "web_user")}]
     if args.only:
         targets = [a for a in targets if a["name"] == args.only]
     if not targets:

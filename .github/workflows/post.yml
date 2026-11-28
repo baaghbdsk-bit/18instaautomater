@@ -57,7 +57,10 @@ jobs:
             || { echo "::error::ffmpeg lacks libass (ass/subtitles filter)"; exit 1; }
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install playwright
+          playwright install chromium --with-deps
 
       - name: Run tests
         run: python -m pytest -q
@@ -114,6 +117,7 @@ jobs:
 
       - name: Generate, render, post
         env:
+          INSTAGRAM_COOKIES_BASE64: ${{ secrets.INSTAGRAM_COOKIES_BASE64 }}
           IG_USERNAME_1: ${{ secrets.IG_USERNAME_1 }}
           IG_PASSWORD_1: ${{ secrets.IG_PASSWORD_1 }}
           IG_2FA_SECRET_1: ${{ secrets.IG_2FA_SECRET_1 }}

@@ -87,6 +87,7 @@ from post_instagram import (
     upload_reel,
     upload_reel_with_music,
 )
+from ig_web import is_web_session_available, publish_media_web
 from themes import THEME_KEYS, theme_meta
 from validate import validate_video
 
@@ -379,25 +380,36 @@ def run_image(args) -> int:
             finish("skipped")
             return 0
 
-        # 2. auth preflight (session/cookie based)
+        # 2. auth preflight (prefer Playwright web cookies like Media-Studio-Automater;
+        # fall back to instagrapi only when INSTAGRAM_COOKIES_BASE64 is absent)
+        use_web = not dry and is_web_session_available()
         usable = [a for a in ACCOUNTS if a["username"] and a["password"]
                   and (not IG_ACTIVE_ACCOUNT or a["name"] == IG_ACTIVE_ACCOUNT)]
-        if not usable and not dry:
-            raise RuntimeError("no accounts configured (set IG_USERNAME_1 etc.)")
-        errors: list = []
-        for acct in usable:
-            try:
-                clients[acct["name"]] = login_account(acct)
-            except Exception as e:  # noqa: BLE001
-                errors.append(f"{acct['name']}: {e}")
-        if usable and not clients and not dry:
-            raise RuntimeError("login failed for every account — " +
-                               "; ".join(errors))
-        if errors:
-            notes.append("accounts unavailable: " + "; ".join(errors))
+        if use_web:
+            target_acct = usable[0] if usable else {
+                "name": IG_ACTIVE_ACCOUNT or "account_1",
+                "username": os.getenv("IG_USERNAME_1", "web_user"),
+                "handle": os.getenv("IG_HANDLE_1", ""),
+            }
+            clients[target_acct["name"]] = None
+            print(f"[+] {target_acct['name']}: using Playwright web session (no instagrapi login)")
+        else:
+            if not usable and not dry:
+                raise RuntimeError("no accounts configured (set INSTAGRAM_COOKIES_BASE64 or IG_USERNAME_1)")
+            errors: list = []
+            for acct in usable:
+                try:
+                    clients[acct["name"]] = login_account(acct)
+                except Exception as e:  # noqa: BLE001
+                    errors.append(f"{acct['name']}: {e}")
+            if usable and not clients and not dry:
+                raise RuntimeError("login failed for every account — " +
+                                   "; ".join(errors))
+            if errors:
+                notes.append("accounts unavailable: " + "; ".join(errors))
 
         # 3. crash reconciliation
-        recovered = reconcile_stale(clients)
+        recovered = 0 if use_web else reconcile_stale(clients)
         if recovered:
             notes.append(f"reconciled {recovered} stale post(s)")
 
@@ -567,7 +579,7 @@ def run_image(args) -> int:
 
         # 12a. duplicate guard
         cl = clients[account["name"]]
-        dup = find_duplicate(cl, account["username"], caption, lookback=12)
+        dup = find_duplicate(cl, account["username"], caption, lookback=12) if cl is not None else None
         if dup:
             db.update_post(post_id, status="skipped",
                            error=f"duplicate caption already live (pk={dup})")
@@ -593,7 +605,7 @@ def run_image(args) -> int:
             }
             db.update_post(post_id, prompt_metadata=json.dumps(
                 meta, ensure_ascii=False))
-        elif MUSIC_ENABLED:
+        elif MUSIC_ENABLED and cl is not None:
             used_music = [r["key"] for r in db.asset_usage("music")]
             track, track_id = pick_orgavsm_track(
                 cl, used_keys=used_music,
@@ -640,7 +652,9 @@ def run_image(args) -> int:
         if not thumb_path.suffix.lower() in (".jpg", ".jpeg"):
             thumb_path = Path(str(thumb_path) + ".jpg")
         db.update_post(post_id, status="publishing")
-        if args.mode == "reel":
+        if cl is None:
+            res = publish_media_web(str(publish_path), caption, mode=args.mode)
+        elif args.mode == "reel":
             res = upload_reel_with_music(cl, account["username"], publish_path,
                                          caption, track=track,
                                          thumbnail=str(thumb_path))
@@ -679,13 +693,14 @@ def run_image(args) -> int:
         finish("failed", msg)
         return 2 if (args.strict and "placeholder" in msg) else 1
     finally:
-        if clients:
+        ig_clients = {k: v for k, v in clients.items() if v is not None}
+        if ig_clients:
             # Collect insights (views/likes/comments) before logging out.
             try:
-                collect_insights(clients, limit=20, min_age_hours=0)
+                collect_insights(ig_clients, limit=20, min_age_hours=0)
             except Exception:  # noqa: BLE001 — insights are best-effort
                 pass
-            logout_all(clients)
+            logout_all(ig_clients)
         report(outcome["status"], post_id, outcome["theme"], outcome["line"],
                outcome["info"], notes)
         cleanup_temp()
