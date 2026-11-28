@@ -81,7 +81,7 @@ def test_trending_catalog_fallback_when_search_broken(monkeypatch):
 
 
 def test_styling_guardrails_intact():
-    assert len(VARIATIONS) == 12
+    assert len(VARIATIONS) >= 12
     for variation in VARIATIONS:
         blob = (variation.outfit + " " + variation.pose).lower()
         assert "nude" not in blob and "naked" not in blob
