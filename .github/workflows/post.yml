@@ -1,7 +1,9 @@
-name: Scheduled quote post (Instagram paused - manual only)
+name: Scheduled quote post (Instagram 1x/day hardened)
 
 on:
-  # Instagram automatic schedule disabled to prevent account flags; use x_post.yml for X.
+  schedule:
+    # Safe 1x/day slot at 6:45 PM IST (13:15 UTC) to minimize flag risk
+    - cron: "15 13 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -125,8 +127,8 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
           NOTIFY_WEBHOOK_URL: ${{ secrets.NOTIFY_WEBHOOK_URL }}
-          MIN_GAP_MINUTES: '90'
-          DAILY_CAP_PER_ACCOUNT: '3'
+          MIN_GAP_MINUTES: '1200'
+          DAILY_CAP_PER_ACCOUNT: '1'
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
           IMAGE_PROVIDER: ${{ vars.IMAGE_PROVIDER || 'perchance' }}
           PERCHANCE_URL: ${{ vars.PERCHANCE_URL || 'http://127.0.0.1:8000' }}
@@ -145,7 +147,7 @@ jobs:
         run: |
           EXTRA_ARGS=""
           if [ -n "${{ inputs.theme }}" ]; then EXTRA_ARGS="$EXTRA_ARGS --theme ${{ inputs.theme }}"; fi
-          python run_all_accounts.py --strict --slot "${{ inputs.slot || 'cron' }}" --mode reel
+          python run_all_accounts.py --strict --slot "${{ inputs.slot || 'cron' }}" --mode reel --only account_1
 
       - name: Upload run artifacts
         if: always()
