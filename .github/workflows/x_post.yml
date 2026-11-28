@@ -43,7 +43,8 @@ jobs:
 
       - name: Generate & Publish to X
         env:
-          FAL_KEY: ${{ secrets.FAL_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          IMAGE_PROVIDER: nvidia
           X_COOKIES_BASE64: ${{ secrets.X_COOKIES_BASE64 }}
           DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
         run: |

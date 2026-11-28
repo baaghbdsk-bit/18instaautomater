@@ -60,15 +60,21 @@ def generate_character_image(provider_name: Optional[str] = None) -> Path:
         prompt=prompt,
         negative_prompt=MASTER_PROFILE.negative_prompt_text(),
         aspect_ratio="3:4",
+        width=1024,
+        height=1360,
+        seed="424242",
         reference_images=list(MASTER_PROFILE.reference_images),
     )
 
-    chosen = provider_name or ("fal_kontext" if os.getenv("FAL_KEY") else None)
-    provider = get_provider(chosen)
-    res = provider.generate(req)
-    if not res.ok or not res.path:
-        raise RuntimeError(f"Image generation failed ({provider.name}): {res.error}")
-    return Path(res.path)
+    candidates = [provider_name] if provider_name else (["nvidia", "perchance"] if os.getenv("NVIDIA_API_KEY") else ["perchance"])
+    errors = []
+    for name in candidates:
+        provider = get_provider(name)
+        res = provider.generate(req)
+        if res.ok and res.path:
+            return Path(res.path)
+        errors.append(f"{provider.name}: {res.error}")
+    raise RuntimeError("All free image providers failed -> " + " | ".join(errors))
 
 
 def post_to_x(text: str, media_path: Path, dry_run: bool = False) -> bool:
