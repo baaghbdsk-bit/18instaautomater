@@ -53,9 +53,33 @@ def _pick_caption() -> str:
     return random.choice(CAPTIONS)
 
 
+def _is_blank_or_black(path: Path) -> bool:
+    """Detect solid-black (safety-filtered) or flat images using pixel std deviation."""
+    try:
+        from PIL import Image, ImageStat
+        with Image.open(path) as im:
+            stat = ImageStat.Stat(im.convert("RGB"))
+            return max(stat.stddev) < 8.0
+    except Exception:
+        return True
+
+
+def _editorial_glamour_prompt(variation) -> str:
+    """Clean editorial fashion/glamour prompt that passes NVIDIA NIM without black-out."""
+    return (
+        "Candid editorial portrait photograph of a 25-year-old South Asian woman, "
+        "light hazel-green eyes, soft freckles across nose and cheeks, small silver nose ring, "
+        "long wavy dark brown hair, natural skin texture with visible pores, "
+        "curvy hourglass figure, confident warm smile. "
+        f"Wearing {variation.outfit}, pose: {variation.pose}, "
+        f"setting: {variation.setting}, lighting: {variation.lighting}, "
+        "shot on 50mm f/1.8 lens, natural depth of field, realistic fashion photography."
+    )
+
+
 def generate_character_image(provider_name: Optional[str] = None) -> Path:
     variation = select_variation([])
-    prompt = build_prompt(MASTER_PROFILE, variation)
+    prompt = _editorial_glamour_prompt(variation) if not provider_name or provider_name == "nvidia" else build_prompt(MASTER_PROFILE, variation)
     req = ImageRequest(
         prompt=prompt,
         negative_prompt=MASTER_PROFILE.negative_prompt_text(),
@@ -71,7 +95,12 @@ def generate_character_image(provider_name: Optional[str] = None) -> Path:
         provider = get_provider(name)
         res = provider.generate(req)
         if res.ok and res.path:
-            return Path(res.path)
+            out = Path(res.path)
+            if _is_blank_or_black(out):
+                out.unlink(missing_ok=True)
+                errors.append(f"{provider.name}: returned solid black/blank frame (safety filtered)")
+                continue
+            return out
         errors.append(f"{provider.name}: {res.error}")
     raise RuntimeError("All free image providers failed -> " + " | ".join(errors))
 
